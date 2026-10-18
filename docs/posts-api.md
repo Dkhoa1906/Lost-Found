@@ -1,35 +1,32 @@
-# ĐẶC TẢ API BÀI ĐĂNG (POSTS API)
+# Posts API – Quản lý bài đăng
 
 ## 1. Tạo bài đăng
 
 **Endpoint:** `POST /posts`
 
-**Xác thực:** Bắt buộc đăng nhập.
+**Mô tả:** Tạo bài đăng tìm đồ thất lạc hoặc thông báo nhặt được đồ.
 
-**Dữ liệu gửi lên (Request Body):**
+**Yêu cầu:**
+- Người dùng phải đăng nhập.
+- `type` chỉ nhận `LOST` hoặc `FOUND`.
+- `title` là trường bắt buộc.
+- `user_id` lấy từ thông tin xác thực của người dùng.
+- `status` mặc định là `ACTIVE`.
 
+**Request Body:**
 ```json
 {
   "type": "LOST",
-  "title": "Ví màu đen bị thất lạc",
+  "title": "Ví màu đen",
   "description": "Ví màu đen, bên trong có thẻ sinh viên",
   "category": "WALLET",
   "image_url": "https://example.com/image.jpg",
-  "location": "Khuôn viên trường đại học",
+  "location": "Khuôn viên trường",
   "event_time": "2026-10-18T08:00:00"
 }
 ```
 
-**Quy tắc xử lý:**
-- Người dùng phải đăng nhập trước khi tạo bài đăng.
-- `type` chỉ nhận một trong hai giá trị `LOST` (thất lạc) hoặc `FOUND` (nhặt được).
-- `title` là trường bắt buộc.
-- `user_id` được lấy từ thông tin người dùng đã xác thực, không nhận trực tiếp từ dữ liệu gửi lên.
-- `status` mặc định là `ACTIVE` (đang hoạt động).
-- `event_time` là thời điểm món đồ bị mất hoặc được tìm thấy.
-
-**Phản hồi thành công:** `201 Created`
-
+**Response – 201 Created:**
 ```json
 {
   "message": "Tạo bài đăng thành công",
@@ -37,112 +34,77 @@
 }
 ```
 
-**Các lỗi có thể xảy ra:**
-- `400 Bad Request`: Dữ liệu gửi lên không hợp lệ.
-- `401 Unauthorized`: Người dùng chưa đăng nhập hoặc thông tin xác thực không hợp lệ.
-- `422 Unprocessable Entity`: Dữ liệu không đáp ứng yêu cầu kiểm tra.
+**Lỗi:** `401 Unauthorized`, `422 Unprocessable Entity`.
 
 ## 2. Lấy danh sách bài đăng
 
 **Endpoint:** `GET /posts`
 
-**Xác thực:** Không bắt buộc.
+**Mô tả:** Lấy danh sách bài đăng đang hoạt động, hỗ trợ lọc và tìm kiếm.
 
-**Tham số truy vấn (Query Parameters):**
-- `type`: Lọc theo loại bài đăng `LOST` hoặc `FOUND` (không bắt buộc).
-- `category`: Lọc theo danh mục đồ vật (không bắt buộc).
-- `keyword`: Tìm kiếm theo tiêu đề và mô tả (không bắt buộc).
+**Query Parameters:**
+- `type`: Lọc theo loại bài đăng (`LOST`, `FOUND`).
+- `category`: Lọc theo danh mục đồ vật.
+- `keyword`: Tìm kiếm theo tiêu đề và mô tả.
 
-**Quy tắc xử lý:**
-- Chỉ trả về các bài đăng có trạng thái `ACTIVE`.
-- Áp dụng các điều kiện lọc và tìm kiếm nếu người dùng cung cấp.
-- Không trả về thông tin liên hệ riêng tư như số điện thoại.
+**Response – 200 OK:** Trả về danh sách bài đăng phù hợp.
 
-**Phản hồi thành công:** `200 OK`
-
-Trả về danh sách các bài đăng phù hợp với điều kiện tìm kiếm.
+**Lưu ý:** Không trả về thông tin liên hệ riêng tư của người đăng.
 
 ## 3. Xem chi tiết bài đăng
 
 **Endpoint:** `GET /posts/{post_id}`
 
-**Xác thực:** Không bắt buộc.
+**Mô tả:** Lấy thông tin chi tiết của một bài đăng.
 
-**Quy tắc xử lý:**
-- Tìm bài đăng theo `post_id`.
-- Chỉ trả về thông tin được phép công khai.
-- Không tiết lộ số điện thoại hoặc thông tin liên hệ riêng tư của người đăng.
+**Response – 200 OK:** Trả về thông tin bài đăng, bao gồm tiêu đề, mô tả, hình ảnh, địa điểm, thời điểm mất/nhặt được và trạng thái.
 
-**Phản hồi thành công:** `200 OK`
-
-Trả về thông tin chi tiết gồm:
-- Mã bài đăng.
-- Mã người đăng.
-- Loại bài đăng.
-- Tiêu đề và mô tả.
-- Danh mục đồ vật.
-- Đường dẫn hình ảnh.
-- Địa điểm.
-- Thời điểm mất hoặc tìm thấy.
-- Trạng thái bài đăng.
-- Thời điểm tạo bài đăng.
-
-**Lỗi có thể xảy ra:**
-- `404 Not Found`: Không tìm thấy bài đăng hoặc bài đăng không còn khả dụng.
+**Lỗi:** `404 Not Found` nếu không tìm thấy bài đăng.
 
 ## 4. Cập nhật bài đăng
 
 **Endpoint:** `PUT /posts/{post_id}`
 
-**Xác thực:** Bắt buộc đăng nhập.
+**Mô tả:** Cập nhật thông tin bài đăng.
 
-**Quy tắc xử lý:**
-- Chỉ người tạo bài đăng mới có quyền cập nhật.
-- Máy chủ phải kiểm tra quyền sở hữu bài đăng trước khi xử lý.
-- Dữ liệu cập nhật phải được kiểm tra tính hợp lệ.
-- Không cho phép người dùng tự thay đổi quyền hoặc danh tính người đăng.
+**Yêu cầu:**
+- Người dùng phải đăng nhập.
+- Chỉ chủ sở hữu bài đăng mới được cập nhật.
+- Dữ liệu cập nhật phải hợp lệ.
 
-**Phản hồi thành công:** `200 OK`
-
+**Response – 200 OK:**
 ```json
 {
   "message": "Cập nhật bài đăng thành công"
 }
 ```
 
-**Các lỗi có thể xảy ra:**
-- `401 Unauthorized`: Chưa đăng nhập hoặc thông tin xác thực không hợp lệ.
-- `403 Forbidden`: Không có quyền cập nhật bài đăng.
-- `404 Not Found`: Không tìm thấy bài đăng.
-- `422 Unprocessable Entity`: Dữ liệu cập nhật không hợp lệ.
+**Lỗi:** `401 Unauthorized`, `403 Forbidden`, `404 Not Found`, `422 Unprocessable Entity`.
 
 ## 5. Xóa bài đăng
 
 **Endpoint:** `DELETE /posts/{post_id}`
 
-**Xác thực:** Bắt buộc đăng nhập.
+**Mô tả:** Xóa bài đăng của người dùng.
 
-**Quy tắc xử lý:**
-- Chỉ người tạo bài đăng mới có quyền xóa.
-- Máy chủ phải kiểm tra quyền sở hữu trước khi xóa.
-- Cần xử lý các dữ liệu liên quan như câu hỏi xác minh và yêu cầu nhận lại đồ để tránh lỗi liên kết dữ liệu.
+**Yêu cầu:**
+- Người dùng phải đăng nhập.
+- Chỉ chủ sở hữu bài đăng mới được xóa.
+- Xử lý các dữ liệu liên quan để bảo đảm tính toàn vẹn dữ liệu.
 
-**Phản hồi thành công:** `200 OK`
-
+**Response – 200 OK:**
 ```json
 {
   "message": "Xóa bài đăng thành công"
 }
 ```
 
-**Các lỗi có thể xảy ra:**
-- `401 Unauthorized`: Chưa đăng nhập hoặc thông tin xác thực không hợp lệ.
-- `403 Forbidden`: Không có quyền xóa bài đăng.
-- `404 Not Found`: Không tìm thấy bài đăng.
+**Lỗi:** `401 Unauthorized`, `403 Forbidden`, `404 Not Found`.
 
-## 6. Quy tắc bảo mật
+## 6. Quy tắc chung
 
-- Chỉ người dùng đã đăng nhập mới được tạo, cập nhật hoặc xóa bài đăng.
-- Máy chủ phải kiểm tra quyền sở hữu trước khi cho phép cập nhật hoặc xóa.
+- Các API tạo, cập nhật và xóa bài đăng yêu cầu xác thực.
+- Máy chủ phải kiểm tra quyền sở hữu trước khi cập nhật hoặc xóa.
 - Không công khai số điện thoại hoặc thông tin liên hệ riêng tư.
-- Dữ liệu đầu vào phải được kiểm
+- Kiểm tra dữ liệu đầu vào trước khi lưu vào cơ sở dữ liệu.
+- Chỉ hiển thị bài đăng phù hợp với trạng thái hiện tại.
