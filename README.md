@@ -135,7 +135,6 @@ flowchart LR
 | Chọn ảnh | Android Photo Picker |
 | Vị trí hiện tại ("Gần nhất") | Fused Location Provider |
 | Lưu phiên đăng nhập | DataStore |
-| Test | JUnit, MockK, Compose UI Test |
 
 ### ⚙️ Backend
 
@@ -146,7 +145,6 @@ flowchart LR
 | Xác thực | Kiểm tra JWT của Supabase bằng JWKS (PyJWT) |
 | Giới hạn tốc độ | slowapi |
 | Gửi email (quên mật khẩu) | SMTP riêng (Resend hoặc Gmail SMTP), vì dịch vụ email mặc định của Supabase giới hạn rất thấp |
-| Test | pytest + httpx |
 | Đóng gói / triển khai | Docker; Render hoặc Google Cloud Run |
 
 ### 🗄️ Database & dịch vụ
@@ -176,7 +174,7 @@ flowchart LR
 
 ## 5. Thiết kế cơ sở dữ liệu
 
-Schema gồm **16 bảng**; toàn bộ (bảng, ràng buộc, trigger, hàm tìm kiếm, RLS, seed) nằm trong [`supabase/schema.sql`](supabase/schema.sql).
+Schema gồm **16 bảng**. Chạy `supabase/schema.sql` một lần trong SQL Editor của Supabase (nếu đã chạy dở, chạy `supabase/reset.sql` trước); toàn bộ (bảng, ràng buộc, trigger, hàm tìm kiếm, RLS, seed) nằm trong [`supabase/schema.sql`](supabase/schema.sql).
 
 ```mermaid
 erDiagram
@@ -320,43 +318,44 @@ lost-and-found/
 │   │   ├── core/        # config, security (JWT/JWKS)
 │   │   ├── services/    # logic nghiệp vụ
 │   │   └── db/          # kết nối, truy vấn
-│   └── tests/
 ├── admin-web/       # React + Vite + TypeScript
 ├── supabase/
-│   ├── schema.sql       # (hoặc migrations/0001_init.sql)
-│   └── seed.sql
-├── docs/            # thiết kế, API contract, báo cáo
+│   ├── schema.sql       # toàn bộ database (bảng, trigger, RLS, hàm, seed)
+│   └── reset.sql        # chỉ dùng khi phát triển: xóa sạch để chạy lại schema.sql
+├── docs/            # kế hoạch 30 ngày (.docx), API contract, báo cáo
 └── README.md
 ```
 
 ---
 
-## 9. Chạy thử dự án (tóm tắt)
+## 9. Lộ trình 30 ngày
 
-1. **Supabase**: tạo project, chạy `supabase/schema.sql` trong SQL Editor, tắt *Allow new users to sign up*, tắt *Confirm email*, cấu hình **SMTP riêng** cho email quên mật khẩu, bucket `post-images` đã được schema tạo sẵn.
-2. **Backend**: `cd backend && python -m venv .venv && pip install -r requirements.txt`, tạo `.env` (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `DATABASE_URL`), chạy `uvicorn app.main:app --reload`.
-3. **Mobile**: mở thư mục `mobile/` bằng Android Studio, khai báo `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `API_BASE_URL` trong `local.properties`, chạy trên máy ảo hoặc điện thoại thật.
-4. **Admin web**: `cd admin-web && npm install && npm run dev`.
+Kế hoạch chi tiết từng ngày, phân công 3 người và hướng dẫn thực hiện nằm trong file **`docs/Lost-and-Found-Ke-hoach-30-ngay.docx`**.
 
-> Tuyệt đối **không commit** file `.env`, `local.properties` hoặc bất kỳ khóa bí mật nào lên GitHub.
+| Mốc | Thời gian | Kết quả |
+|---|---|---|
+| **M1** Nền móng và đăng nhập | Ngày 1–7 | Supabase + schema, FastAPI đã triển khai, đăng ký / đăng nhập, khung giao diện, API được chốt |
+| **M2** Đăng bài, bảng tin, xác minh | Ngày 8–14 | Đăng bài có ảnh, bảng tin, tìm kiếm, lọc, Gần nhất, trả lời và duyệt xác minh |
+| **M3** Chat, DONE, báo cáo | Ngày 15–21 | Chat realtime, hai bên xác nhận ra DONE, thông báo, báo cáo, đóng băng tính năng |
+| **M4** Admin web, hoàn thiện, phát hành | Ngày 22–28 | Admin web, APK cuối, báo cáo và slide, tập demo |
+| Dự phòng | Ngày 29–30 | Sửa lỗi cuối và nộp bài |
+
+Mức ưu tiên:
+
+- **Bắt buộc:** đăng ký / đăng nhập, đăng bài, bảng tin và tìm kiếm, xác minh, chat, DONE, báo cáo và admin tối thiểu.
+- **Nên có:** thông báo, Bài của tôi, khối Cần xử lý, sắp xếp Gần nhất, chỉnh sửa hồ sơ.
+- **Nếu còn thời gian:** quên / đổi mật khẩu bằng mã email, ảnh đại diện, gửi ảnh trong chat, dashboard admin.
+
+### Tiến độ
+
+- [ ] **M1** Nền móng và đăng nhập
+- [ ] **M2** Đăng bài, bảng tin, xác minh
+- [ ] **M3** Chat, DONE, báo cáo
+- [ ] **M4** Admin web, hoàn thiện, phát hành
 
 ---
 
-## 10. Lộ trình
-
-- [ ] **M0** Nền tảng: repo, Supabase, API contract, các thử nghiệm kỹ thuật rủi ro
-- [ ] **M1** Tài khoản: đăng ký, đăng nhập, quên / đổi mật khẩu, hồ sơ, phân quyền
-- [ ] **M2** Bài đăng: tạo bài, ảnh, tag, vị trí, bảng tin Lost/Found, tìm kiếm, bộ lọc, sắp xếp Gần nhất
-- [ ] **M3** Xác minh quyền sở hữu (Verify)
-- [ ] **M4** Chat realtime
-- [ ] **M5** Hoàn tất trao trả (DONE), vòng đời bài đăng (Expired/Archived/ẩn/xóa) và thông báo
-- [ ] **M6** Report và Admin web
-- [ ] **M7** Hoàn thiện: bảo mật, hiệu năng, kiểm thử
-- [ ] **M8** Phát hành, tài liệu, demo
-
----
-
-## 11. Nhóm thực hiện
+## 10. Nhóm thực hiện
 
 | Thành viên | Vai trò chính |
 |---|---|
