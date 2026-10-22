@@ -1,0 +1,88 @@
+# =====================================================================
+#  .gitignore TỔNG cho dự án Lost & Found
+#  Đặt ở thư mục gốc của repo. Áp dụng cho cả backend, mobile, admin-web.
+#  Quy tắc: thứ gì là BÍ MẬT hoặc do máy tự sinh ra thì KHÔNG đưa lên Git.
+# =====================================================================
+
+# ---------------------------------------------------------------------
+# 1. BÍ MẬT (quan trọng nhất - tuyệt đối không commit)
+# ---------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+# File cấu hình khóa của Android (chứa SUPABASE_URL, key...)
+local.properties
+# Khóa ký ứng dụng Android
+*.keystore
+*.jks
+
+# ---------------------------------------------------------------------
+# 2. PYTHON / FASTAPI (backend/)
+# ---------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+.coverage
+htmlcov/
+
+# ---------------------------------------------------------------------
+# 3. ANDROID / KOTLIN (mobile/)
+# ---------------------------------------------------------------------
+*.iml
+.gradle/
+build/
+/captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+bin/
+gen/
+out/
+# Thư mục tạm của Kotlin
+.kotlin/
+
+# ---------------------------------------------------------------------
+# 4. NODE / REACT (admin-web/)
+# ---------------------------------------------------------------------
+node_modules/
+dist/
+.vite/
+coverage/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.tsbuildinfo
+
+# ---------------------------------------------------------------------
+# 5. SUPABASE CLI (supabase/)
+# ---------------------------------------------------------------------
+supabase/.temp/
+supabase/.branches/
+
+# ---------------------------------------------------------------------
+# 6. EDITOR / HỆ ĐIỀU HÀNH / LOG
+# ---------------------------------------------------------------------
+.idea/
+.vscode/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.log
+*.tmp
