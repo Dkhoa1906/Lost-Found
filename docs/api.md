@@ -295,6 +295,71 @@ Người không phải admin gọi các endpoint này nhận `403`. **Mọi hàn
 
 Số điện thoại **đầy đủ không bao giờ được trả về** cho admin web; backend chỉ gửi bản đã che.
 
+#### `GET /admin/reports` và `GET /admin/reports/{id}`: dữ liệu trả về
+
+Tham số của danh sách: `status` (`PENDING`, `REVIEWING`, `RESOLVED`, `DISMISSED`), `type` (`POST`, `USER`, `CONVERSATION`), `q` (tìm theo mã báo cáo như `R-1042` hoặc `1042`, tiêu đề bài, handle người bị báo cáo, handle người báo cáo; gõ **không dấu** vẫn tìm được), `limit` (1–100, mặc định 20), `offset`. Báo cáo chưa xử lý (`PENDING`, `REVIEWING`) luôn nằm trên, trong mỗi nhóm mới nhất trước.
+
+```json
+// GET /admin/reports?status=PENDING&limit=20
+{
+  "total": 12,
+  "items": [
+    {
+      "id": "4288d74f-...",
+      "code": "R-1042",
+      "target_type": "POST",
+      "target_id": "9b1d...",
+      "target_label": "Nhặt được balo đen có laptop",
+      "reason": "MONEY_REQUEST",
+      "status": "PENDING",
+      "reporter": { "id": "374f...", "username": "thulan_k" },
+      "created_at": "2026-10-23T09:00:00+00:00",
+      "same_target_count": 3
+    }
+  ]
+}
+```
+`target_label` là tiêu đề bài, handle người dùng, hoặc `a ↔ b` với hội thoại. `same_target_count` là tổng số báo cáo về cùng đối tượng (kể cả báo cáo này), dùng để hiện chấm cảnh báo.
+
+```json
+// GET /admin/reports/{id}
+{
+  "id": "4288d74f-...", "code": "R-1042", "reason": "MONEY_REQUEST", "status": "PENDING",
+  "description": "Bạn này đòi tiền chuộc", "created_at": "...",
+  "handled_by": null, "handled_at": null, "resolution_note": null,
+  "reporter": { "id": "...", "username": "thulan_k", "display_name": "Thu Lan" },
+  "target": {
+    "type": "POST",
+    "post": {
+      "id": "...", "type": "FOUND", "title": "Nhặt được balo đen có laptop", "description": "...",
+      "status": "ACTIVE", "location_text": "Thư viện Tổng hợp", "event_time": "...", "created_at": "...",
+      "category": { "id": 5, "name": "Túi / Balo" },
+      "tags": ["balo", "laptop"], "image_paths": ["<user_id>/<uuid>.jpg"],
+      "author": {
+        "id": "...", "username": "hoang_nam", "display_name": null, "is_banned": false,
+        "joined_at": "...", "post_count": 12, "reported_before_count": 1
+      }
+    },
+    "user": null,
+    "conversation": {
+      "id": "...", "participants": ["hoang_nam", "thulan_k"], "is_locked": false,
+      "last_message_at": "...", "message_count": 6
+    }
+  },
+  "reports_on_target": [
+    { "id": "...", "code": "R-1042", "reason": "MONEY_REQUEST", "description": "...",
+      "status": "PENDING", "created_at": "...", "reporter_username": "thulan_k", "is_current": true }
+  ],
+  "admin_actions": []
+}
+```
+Ghi chú:
+- Đúng một trong `target.post` hoặc `target.user` có dữ liệu (tùy `target.type`); với báo cáo hội thoại thì dùng `target.conversation`.
+- `target.conversation` còn xuất hiện ở báo cáo bài hoặc người dùng khi **người báo cáo và đối tượng từng có hội thoại**. Nội dung tin nhắn **không** nằm trong phản hồi này; muốn xem phải gọi `GET /admin/conversations/{id}/messages` (có ghi nhật ký).
+- `image_paths` ghép với địa chỉ ảnh công khai như mục 4.5.
+- `reported_before_count`: số báo cáo **khác** về người này hoặc các bài của họ.
+- Không có email hay số điện thoại trong phản hồi.
+
 **Thay đổi (đều ghi nhật ký):**
 
 | Endpoint | Body | Tác dụng | Trạng thái |

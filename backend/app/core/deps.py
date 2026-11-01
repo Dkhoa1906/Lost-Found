@@ -18,3 +18,15 @@ def get_active_user_id(
     if row[0]:
         raise HTTPException(status_code=403, detail="Tài khoản đã bị khóa")
     return user_id
+
+def get_admin_user_id(
+    user_id: str = Depends(get_current_user_id),
+    conn: psycopg.Connection = Depends(get_conn),
+) -> str:
+    """Chỉ cho tài khoản có vai trò ADMIN (và chưa bị khóa) đi qua."""
+    row = conn.execute(
+        "select role, is_banned from public.profiles where id = %s", (user_id,)
+    ).fetchone()
+    if row is None or row[0] != "ADMIN" or row[1]:
+        raise HTTPException(status_code=403, detail="Chỉ quản trị viên mới được truy cập")
+    return user_id
