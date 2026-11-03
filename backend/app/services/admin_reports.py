@@ -4,6 +4,9 @@ from uuid import UUID
 import psycopg
 from fastapi import HTTPException
 
+from app.schemas.admin import ResolveRequest
+from app.services.moderation import ban_user, log_action, notify, remove_post, set_auth_ban
+
 _TARGET_TYPE_SQL = (
     "case when r.target_post_id is not null then 'POST' "
     "when r.target_user_id is not null then 'USER' else 'CONVERSATION' end"
@@ -157,7 +160,7 @@ def get_report_detail(conn: psycopg.Connection, report_id: UUID) -> dict:
     r = conn.execute(
         """
         select r.id, r.report_no, r.reason, r.description, r.status, r.created_at,
-               r.handled_at, r.resolution_note, hb.id, hb.username,
+               r.handled_at, r.resolution_action, hb.id, hb.username,
                rp.id, rp.username, rp.display_name,
                r.target_post_id, r.target_user_id, r.target_conversation_id
         from public.reports r
@@ -169,7 +172,7 @@ def get_report_detail(conn: psycopg.Connection, report_id: UUID) -> dict:
     ).fetchone()
     if r is None:
         raise HTTPException(status_code=404, detail="Không tìm thấy báo cáo")
-    (rid, report_no, reason, description, status, created_at, handled_at, resolution_note,
+    (rid, report_no, reason, description, status, created_at, handled_at, resolution_action,
      hb_id, hb_name, rp_id, rp_name, rp_display, post_id, user_id, conv_id) = r
 
     detail: dict = {
@@ -180,7 +183,8 @@ def get_report_detail(conn: psycopg.Connection, report_id: UUID) -> dict:
         "status": status,
         "created_at": created_at,
         "handled_at": handled_at,
-        "resolution_note": resolution_note,
+        "resolution_action": resolution_action,
+        "resolution_note": None,
         "handled_by": {"id": str(hb_id), "username": hb_name} if hb_id else None,
         "reporter": {"id": str(rp_id), "username": rp_name, "display_name": rp_display},
         "target": {"type": None, "post": None, "user": None, "conversation": None},
@@ -261,11 +265,15 @@ def get_report_detail(conn: psycopg.Connection, report_id: UUID) -> dict:
         for x in rows
     ]
 
+    # Nhật ký xử lý: mọi hành động liên quan tới các báo cáo cùng đối tượng
     rows = conn.execute(
-        """
+        f"""
         select a.id, a.action, a.note, a.created_at, u.username
-        from public.admin_actions a join public.profiles u on u.id = a.admin_id
-        where a.report_id = %s order by a.created_at desc
+        from public.admin_actions a
+        join public.profiles u on u.id = a.admin_id
+        where a.report_id in (
+            select r2.id from public.reports r2 join public.reports r on r.id = %s where {_SAME_TARGET})
+        order by a.created_at desc, a.id desc
         """,
         (report_id,),
     ).fetchall()
@@ -273,4 +281,121 @@ def get_report_detail(conn: psycopg.Connection, report_id: UUID) -> dict:
         {"id": x[0], "action": x[1], "note": x[2], "created_at": x[3], "admin_username": x[4]}
         for x in rows
     ]
+    # Ghi chú kết quả = ghi chú của hành động xử lý gần nhất (không tính "đang xem xét")
+    for a in detail["admin_actions"]:
+        if a["action"] in ("REMOVE_POST", "BAN_USER", "RESOLVE_REPORT", "DISMISS_REPORT"):
+            detail["resolution_note"] = a["note"]
+            break
     return detail
+
+
+def _lock_report(conn: psycopg.Connection, report_id: UUID) -> tuple:
+    row = conn.execute(
+        "select report_no, status, target_post_id, target_user_id, target_conversation_id "
+        "from public.reports where id = %s for update",
+        (report_id,),
+    ).fetchone()
+    if row is None:
+        raise HTTPException(status_code=404, detail="Không tìm thấy báo cáo")
+    return row
+
+
+def _open_reports_same_target(conn: psycopg.Connection, report_id: UUID, statuses: tuple) -> list:
+    """Các báo cáo cùng đối tượng đang ở một trong các trạng thái `statuses` (và khóa chúng lại)."""
+    return conn.execute(
+        f"""
+        select r2.id, r2.reporter_id from public.reports r2
+        join public.reports r on r.id = %s
+        where {_SAME_TARGET} and r2.status = any(%s)
+        order by r2.created_at
+        for update of r2
+        """,
+        (report_id, list(statuses)),
+    ).fetchall()
+
+
+def review_report(conn: psycopg.Connection, admin_id: str, report_id: UUID) -> dict:
+    report_no, status, *_ = _lock_report(conn, report_id)
+    code = f"R-{report_no}"
+    if status == "REVIEWING":  # gọi lại không gây lỗi
+        return {"report_id": str(report_id), "code": code, "status": status, "affected_reports": 0}
+    if status != "PENDING":
+        raise HTTPException(status_code=409, detail="Báo cáo này đã được xử lý")
+
+    rows = _open_reports_same_target(conn, report_id, ("PENDING",))
+    ids = [r[0] for r in rows]
+    conn.execute(
+        "update public.reports set status = 'REVIEWING', handled_by = %s where id = any(%s)",
+        (admin_id, ids),
+    )
+    log_action(conn, admin_id, "REVIEW_REPORT", "REPORT", report_id, report_id, None)
+    return {"report_id": str(report_id), "code": code, "status": "REVIEWING", "affected_reports": len(ids)}
+
+
+_OUTCOME_TEXT = {
+    "REMOVE_POST": "Bài đăng bị báo cáo đã được gỡ",
+    "BAN_USER": "Tài khoản vi phạm đã bị khóa",
+    "KEEP": "Đã xem xét, nội dung được giữ nguyên",
+    "DISMISS": "Không phát hiện vi phạm",
+}
+
+
+def resolve_report(conn: psycopg.Connection, admin_id: str, report_id: UUID, body: ResolveRequest) -> dict:
+    report_no, status, post_id, user_id, conv_id = _lock_report(conn, report_id)
+    code = f"R-{report_no}"
+    if status not in ("PENDING", "REVIEWING"):
+        raise HTTPException(status_code=409, detail="Báo cáo này đã được xử lý")
+
+    banned_user_id = None
+    action = body.action
+
+    if action == "REMOVE_POST":
+        if not post_id:
+            raise HTTPException(status_code=400, detail="Báo cáo này không nhắm vào một bài đăng")
+        remove_post(conn, admin_id, post_id, body.note, report_id)
+
+    elif action == "BAN_USER":
+        if post_id:
+            (banned_user_id,) = conn.execute(
+                "select author_id from public.posts where id = %s", (post_id,)
+            ).fetchone()
+        elif user_id:
+            banned_user_id = user_id
+        else:  # hội thoại: admin phải chọn khóa ai trong hai người
+            if body.user_id is None:
+                raise HTTPException(status_code=422, detail="Cần chọn người bị khóa (user_id) khi xử lý báo cáo hội thoại")
+            row = conn.execute(
+                "select 1 from public.conversations where id = %s and (post_author_id = %s or claimant_id = %s)",
+                (conv_id, body.user_id, body.user_id),
+            ).fetchone()
+            if row is None:
+                raise HTTPException(status_code=400, detail="Người này không thuộc cuộc trò chuyện bị báo cáo")
+            banned_user_id = body.user_id
+        ban_user(conn, admin_id, banned_user_id, body.note, report_id)
+
+    elif action == "KEEP":
+        log_action(conn, admin_id, "RESOLVE_REPORT", "REPORT", report_id, report_id, body.note)
+    else:  # DISMISS
+        log_action(conn, admin_id, "DISMISS_REPORT", "REPORT", report_id, report_id, body.note)
+
+    # Quyết định áp dụng cho MỌI báo cáo đang mở về cùng đối tượng
+    new_status = "DISMISSED" if action == "DISMISS" else "RESOLVED"
+    rows = _open_reports_same_target(conn, report_id, ("PENDING", "REVIEWING"))
+    ids = [r[0] for r in rows]
+    # KHÔNG ghi body.note vào cột resolution_note: người báo cáo đọc được dòng báo cáo của mình qua RLS,
+    # còn ghi chú của admin là nội bộ (chỉ nằm trong admin_actions, mà chỉ admin đọc được)
+    conn.execute(
+        "update public.reports set status = %s, resolution_action = %s, "
+        "handled_by = %s, handled_at = now() where id = any(%s)",
+        (new_status, action, admin_id, ids),
+    )
+    for _rid, reporter_id in rows:
+        notify(conn, reporter_id, "REPORT_UPDATED", "Báo cáo của bạn đã được xử lý", _OUTCOME_TEXT[action])
+
+    login_blocked = set_auth_ban(banned_user_id, True) if banned_user_id else None
+    return {
+        "report_id": str(report_id), "code": code, "status": new_status, "resolution_action": action,
+        "affected_reports": len(ids),
+        "banned_user_id": str(banned_user_id) if banned_user_id else None,
+        "login_blocked": login_blocked,
+    }

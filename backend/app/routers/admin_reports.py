@@ -1,3 +1,4 @@
+from typing import Literal
 from uuid import UUID
 
 import psycopg
@@ -5,8 +6,15 @@ from fastapi import APIRouter, Depends, Query
 
 from app.core.deps import get_admin_user_id
 from app.db import get_conn
-from app.schemas.admin import ReportListResponse, ReportStatus, ReportTargetType
-from app.services.admin_reports import get_report_detail, list_reports
+from app.schemas.admin import (
+    ReportListResponse,
+    ReportStatus,
+    ReportTargetType,
+    ResolveRequest,
+    ResolveResponse,
+    ReviewResponse,
+)
+from app.services.admin_reports import get_report_detail, list_reports, resolve_report, review_report
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -31,3 +39,22 @@ def report_detail(
     conn: psycopg.Connection = Depends(get_conn),
 ):
     return get_report_detail(conn, report_id)
+
+
+@router.post("/reports/{report_id}/review", response_model=ReviewResponse)
+def report_review(
+    report_id: UUID,
+    admin_id: str = Depends(get_admin_user_id),
+    conn: psycopg.Connection = Depends(get_conn),
+):
+    return review_report(conn, admin_id, report_id)
+
+
+@router.post("/reports/{report_id}/resolve", response_model=ResolveResponse)
+def report_resolve(
+    report_id: UUID,
+    body: ResolveRequest,
+    admin_id: str = Depends(get_admin_user_id),
+    conn: psycopg.Connection = Depends(get_conn),
+):
+    return resolve_report(conn, admin_id, report_id, body)

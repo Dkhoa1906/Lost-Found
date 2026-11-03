@@ -20,6 +20,11 @@ def open_pool() -> None:
         max_size=5,
         # prepare_threshold=None: tắt "prepared statement" cho an toàn với mọi kiểu pooler
         kwargs={"prepare_threshold": None},
+        # Supabase tự đóng kết nối nhàn rỗi. Kiểm tra kết nối còn sống TRƯỚC khi đưa cho request,
+        # nếu chết thì lấy kết nối khác (nếu không, request đầu tiên sau lúc nghỉ sẽ bị lỗi 500)
+        check=ConnectionPool.check_connection,
+        # Tự đóng kết nối đã nhàn rỗi quá 4 phút, trước khi phía Supabase kịp đóng
+        max_idle=240,
         open=True,
     )
 
