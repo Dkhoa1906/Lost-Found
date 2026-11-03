@@ -13,9 +13,10 @@ import {
   EmptyDescription,
 } from "@/components/ui/empty";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import type { CatalogRow } from "./types";
 
-const labels: Record<string, string> = {
+export const labels: Record<string, string> = {
   PENDING: "Chờ xử lý",
   REVIEWING: "Đang xem xét",
   RESOLVED: "Đã xử lý",
@@ -36,15 +37,28 @@ const labels: Record<string, string> = {
   MONEY_REQUEST: "Đòi tiền",
   VIOLATION: "Vi phạm",
   OTHER: "Khác",
+  REMOVE_POST: "Gỡ bài",
+  RESTORE_POST: "Khôi phục bài",
+  BAN_USER: "Khóa tài khoản",
+  UNBAN_USER: "Mở khóa tài khoản",
+  REVIEW_REPORT: "Nhận xem xét",
+  RESOLVE_REPORT: "Xử lý báo cáo",
+  DISMISS_REPORT: "Không vi phạm",
+  VIEW_CONVERSATION: "Xem hội thoại",
+  LOCK_CONVERSATION: "Khóa hội thoại",
+  KEEP: "Giữ nguyên",
+  DISMISS: "Không vi phạm",
 };
 export type Column = { key: keyof CatalogRow; label: string };
 
 export function DataTable({
   rows,
   columns,
+  action,
 }: {
   rows: CatalogRow[];
   columns: Column[];
+  action?: (row: CatalogRow) => { label: string; run: () => void } | undefined;
 }) {
   if (!rows.length)
     return (
@@ -64,6 +78,11 @@ export function DataTable({
           {columns.map((c) => (
             <TableHead key={c.key}>{c.label}</TableHead>
           ))}
+          {action && (
+            <TableHead>
+              <span className="sr-only">Thao tác</span>
+            </TableHead>
+          )}
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -74,18 +93,23 @@ export function DataTable({
               return (
                 <TableCell key={c.key}>
                   {c.key === "status" ? (
-                    <Badge variant="secondary">
-                      {labels[String(value)] || value}
+                    <Badge variant="secondary" data-status={String(value)}>
+                      {value === "RESOLVED" && row.type
+                        ? "Đã trao trả"
+                        : labels[String(value)] || value}
                     </Badge>
                   ) : c.key === "created_at" && value ? (
                     new Date(String(value)).toLocaleString("vi-VN")
                   ) : c.key === "is_banned" ? (
-                    value ? (
-                      "Bị khóa"
-                    ) : (
-                      "Hoạt động"
-                    )
-                  ) : ["type", "target_type", "reason"].includes(c.key) ? (
+                    <Badge
+                      variant="secondary"
+                      data-status={value ? "BANNED" : "ACTIVE"}
+                    >
+                      {value ? "Bị khóa" : "Hoạt động"}
+                    </Badge>
+                  ) : ["type", "target_type", "reason", "action"].includes(
+                      c.key,
+                    ) ? (
                     labels[String(value)] || String(value ?? "—")
                   ) : (
                     String(value ?? "—")
@@ -93,6 +117,23 @@ export function DataTable({
                 </TableCell>
               );
             })}
+            {action && (
+              <TableCell>
+                {(() => {
+                  const item = action(row);
+                  return item ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={item.run}
+                      aria-label={`${item.label} ${row.code ?? row.title ?? row.username ?? ""}`.trim()}
+                    >
+                      {item.label}
+                    </Button>
+                  ) : null;
+                })()}
+              </TableCell>
+            )}
           </TableRow>
         ))}
       </TableBody>
