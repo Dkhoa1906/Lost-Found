@@ -2,7 +2,6 @@ from datetime import datetime
 from typing import Literal
 from uuid import UUID
 
-
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -33,6 +32,7 @@ class ClaimCreatedResponse(BaseModel):
     claim_id: str
     status: str
 
+
 class DecisionRequest(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True)
 
@@ -49,6 +49,7 @@ class DecisionResponse(BaseModel):
 class CancelResponse(BaseModel):
     claim_id: str
     status: str
+
 
 class ConfirmResponse(BaseModel):
     claim_id: str

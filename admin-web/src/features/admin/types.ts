@@ -1,0 +1,34 @@
+export type Tab = "stats" | "reports" | "posts" | "users" | "actions";
+export type CatalogRow = {
+  id: string | number;
+  code?: string;
+  title?: string;
+  target_label?: string;
+  target_type?: string;
+  status?: string;
+  reason?: string;
+  type?: string;
+  username?: string;
+  role?: string;
+  phone_masked?: string | null;
+  is_banned?: boolean;
+  post_count?: number;
+  report_count?: number;
+  action?: string;
+  admin_username?: string;
+  report_code?: string | null;
+  note?: string | null;
+  author_username?: string;
+  created_at?: string;
+};
+export type PageData = { total: number; items: CatalogRow[] };
+export type Stats = {
+  pending_reports: number;
+  pending_delta: number;
+  active_posts: { LOST: number; FOUND: number };
+  users: { total: number; new_this_week: number };
+  completed_this_week: number;
+  completion_rate: number;
+  posts_by_day: { date: string; LOST: number; FOUND: number }[];
+  recent_reports: CatalogRow[];
+};

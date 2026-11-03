@@ -31,6 +31,9 @@ __pycache__/
 venv/
 env/
 .pytest_cache/
+.test-postgres/
+admin-web/test-results/
+admin-web/playwright-report/
 .mypy_cache/
 .ruff_cache/
 *.egg-info/

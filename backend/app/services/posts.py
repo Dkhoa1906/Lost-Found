@@ -1,22 +1,57 @@
 import re
+from uuid import UUID
 
 import psycopg
 from fastapi import HTTPException
 
+from app.db import require_row
 from app.schemas.posts import PostCreate
 
 MAX_POSTS_PER_DAY = 10
 _IMAGE_NAME = r"[A-Za-z0-9_.-]+\.(?:jpg|jpeg|png|webp)"
 
 
+def change_post_status(
+    conn: psycopg.Connection, user_id: str, post_id: UUID, status: str
+) -> dict:
+    row = conn.execute(
+        "select author_id, status, expires_at > now() from public.posts where id = %s for update",
+        (post_id,),
+    ).fetchone()
+    if row is None:
+        raise HTTPException(404, "Không tìm thấy bài đăng")
+    author_id, previous, unexpired = row
+    if str(author_id) != user_id:
+        raise HTTPException(403, "Chỉ chủ bài được thay đổi trạng thái")
+    allowed = {
+        "ARCHIVED": ("ACTIVE",),
+        "ACTIVE": ("ARCHIVED",),
+        "DELETED": ("ACTIVE", "ARCHIVED"),
+    }
+    if previous not in allowed[status] or (status == "ACTIVE" and not unexpired):
+        raise HTTPException(409, "Trạng thái hiện tại không cho phép chuyển")
+    conn.execute("update public.posts set status = %s where id = %s", (status, post_id))
+    if status in ("ARCHIVED", "DELETED"):
+        conn.execute(
+            "update public.claims set status='CLOSED' where post_id=%s and status in ('SUBMITTED','PASSED')",
+            (post_id,),
+        )
+    return {"id": str(post_id), "status": status}
+
+
 def create_post(conn: psycopg.Connection, user_id: str, body: PostCreate) -> dict:
     # 1) Chống spam: giới hạn số bài mỗi 24 giờ
-    (count,) = conn.execute(
-        "select count(*) from public.posts where author_id = %s and created_at > now() - interval '24 hours'",
-        (user_id,),
-    ).fetchone()
+    (count,) = require_row(
+        conn.execute(
+            "select count(*) from public.posts where author_id = %s and created_at > now() - interval '24 hours'",
+            (user_id,),
+        ).fetchone()
+    )
     if count >= MAX_POSTS_PER_DAY:
-        raise HTTPException(status_code=429, detail=f"Bạn đã đăng tối đa {MAX_POSTS_PER_DAY} bài trong 24 giờ")
+        raise HTTPException(
+            status_code=429,
+            detail=f"Bạn đã đăng tối đa {MAX_POSTS_PER_DAY} bài trong 24 giờ",
+        )
 
     # 2) Kiểm tra ảnh: đúng thư mục của chính mình, đúng đuôi file, không trùng, và đã thật sự được tải lên
     paths = body.image_paths
@@ -34,19 +69,28 @@ def create_post(conn: psycopg.Connection, user_id: str, body: PostCreate) -> dic
     # 3) Ghi bài + ảnh + câu hỏi + tag. Tất cả nằm trong MỘT transaction (do get_conn quản lý):
     #    lỗi ở bất kỳ bước nào thì toàn bộ bị hủy, không bao giờ có bài "nửa vời".
     try:
-        post_id, status, expires_at = conn.execute(
-            """
+        post_id, status, expires_at = require_row(
+            conn.execute(
+                """
             insert into public.posts
               (author_id, type, title, description, category_id,
                location_text, latitude, longitude, event_time)
             values (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             returning id, status, expires_at
             """,
-            (
-                user_id, body.type, body.title, body.description or None, body.category_id,
-                body.location_text, body.latitude, body.longitude, body.event_time,
-            ),
-        ).fetchone()
+                (
+                    user_id,
+                    body.type,
+                    body.title,
+                    body.description or None,
+                    body.category_id,
+                    body.location_text,
+                    body.latitude,
+                    body.longitude,
+                    body.event_time,
+                ),
+            ).fetchone()
+        )
 
         with conn.cursor() as cur:
             cur.executemany(

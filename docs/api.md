@@ -1,5 +1,8 @@
 # Lost & Found: Tài liệu API (hợp đồng giữa Backend và Android / Admin web)
 
+> 🧪 = đã triển khai và kiểm thử cục bộ; chưa xác nhận phiên bản trên Render.
+> Các mục ✅ đã có trước đợt bổ sung này giữ nguyên trạng thái được ghi nhận.
+
 > **Người viết:** A (Backend). **Người đọc:** B, C.
 > **Quy tắc:** chốt vào ngày 4. Muốn đổi API thì **báo cả nhóm trước khi sửa**, rồi cập nhật file này trong cùng Pull Request.
 
@@ -146,7 +149,7 @@ Quy tắc thêm:
 
 Lỗi: `400` đường dẫn ảnh sai, ảnh của người khác, hoặc ảnh chưa được tải lên · `422` sai luật ở bảng trên (kể cả bài `FOUND` không có câu hỏi), hoặc `category_id` không tồn tại · `429` đăng quá 10 bài trong 24 giờ · `403` tài khoản bị khóa hoặc chưa có hồ sơ.
 
-#### `PATCH /posts/{post_id}/status` 🚧 (ngày 6)
+#### `PATCH /posts/{post_id}/status` 🧪
 Chủ bài ẩn, hiện lại hoặc xóa bài của mình.
 ```json
 { "status": "ARCHIVED" }
@@ -231,7 +234,7 @@ Lỗi: `403` bạn không phải người gửi yêu cầu · `404` · `409` yê
 
 ### 3.5 Trao trả và DONE
 
-#### `POST /claims/{claim_id}/confirm` 🚧 (ngày 10)
+#### `POST /claims/{claim_id}/confirm` 🧪
 Mỗi bên bấm xác nhận của mình. Không cần body. Backend tự biết bạn là chủ bài hay claimant qua token. **Gọi nhiều lần không gây lỗi.** Yêu cầu phải đang ở trạng thái `PASSED`.
 ```json
 // 200 OK
@@ -247,7 +250,7 @@ Lỗi: `403` bạn không thuộc yêu cầu này · `404` · `409` yêu cầu c
 
 ### 3.6 Báo cáo
 
-#### `POST /reports` 🚧 (ngày 11)
+#### `POST /reports` 🧪
 ```json
 // Request
 {
@@ -285,13 +288,13 @@ Người không phải admin gọi các endpoint này nhận `403`. **Mọi hàn
 
 | Endpoint | Màn Figma | Trả về | Trạng thái |
 |---|---|---|---|
-| `GET /admin/stats` | Tổng quan | Số báo cáo chờ xử lý (và chênh so với hôm qua), số bài đang hiển thị (tách Lost, Found), số người dùng (và số mới trong tuần), số bài DONE trong tuần và tỷ lệ trao trả, số bài mỗi ngày trong 7 ngày (Lost, Found), 5 báo cáo mới nhất | 🚧 |
-| `GET /admin/reports?status=&type=&q=&limit=&offset=` | Báo cáo | Danh sách: mã `R-<report_no>`, loại (bài, tài khoản, hội thoại), đối tượng, lý do, handle người báo cáo, thời gian, trạng thái. `status`: `PENDING`, `REVIEWING`, `RESOLVED`, `DISMISSED` | 🚧 |
-| `GET /admin/reports/{id}` | Chi tiết báo cáo | Báo cáo, bài hoặc tài khoản bị báo cáo (kèm số bài và số lần bị báo cáo của người đăng), **mọi báo cáo khác về cùng đối tượng**, tóm tắt hội thoại liên quan (số tin, tin cuối), nhật ký xử lý | 🚧 |
-| `GET /admin/posts?type=&status=&q=&limit=&offset=` | Bài đăng | Danh sách kèm **số báo cáo** của từng bài | 🚧 |
-| `GET /admin/users?status=&q=&limit=&offset=` | Người dùng | Handle, **số điện thoại đã che** (`09•• ••• 321`), vai trò, tháng tham gia, số bài, số lần bị báo cáo, trạng thái. `status`: `ACTIVE`, `BANNED`, `REPORTED` (bị báo cáo nhiều) | 🚧 |
-| `GET /admin/actions?target_type=&range=&q=` | Nhật ký hoạt động | Thời gian, admin, hành động, đối tượng, mã báo cáo, ghi chú. `range`: `today`, `7d`, `30d` | 🚧 |
-| `GET /admin/conversations/{id}/messages?limit=100&before_id=` | Hội thoại bị báo cáo | Tin nhắn của cuộc chat **bị báo cáo**. Mỗi lần gọi **luôn ghi log** `VIEW_CONVERSATION` | 🚧 |
+| `GET /admin/stats` | Tổng quan | Số báo cáo chờ xử lý (và chênh so với hôm qua), số bài đang hiển thị (tách Lost, Found), số người dùng (và số mới trong tuần), số bài DONE trong tuần và tỷ lệ trao trả, số bài mỗi ngày trong 7 ngày (Lost, Found), 5 báo cáo mới nhất | 🧪 |
+| `GET /admin/reports?status=&type=&q=&limit=&offset=` | Báo cáo | Danh sách: mã `R-<report_no>`, loại (bài, tài khoản, hội thoại), đối tượng, lý do, handle người báo cáo, thời gian, trạng thái. `status`: `PENDING`, `REVIEWING`, `RESOLVED`, `DISMISSED` | 🧪 |
+| `GET /admin/reports/{id}` | Chi tiết báo cáo | Báo cáo, bài hoặc tài khoản bị báo cáo (kèm số bài và số lần bị báo cáo của người đăng), **mọi báo cáo khác về cùng đối tượng**, tóm tắt hội thoại liên quan (số tin, tin cuối), nhật ký xử lý | 🧪 |
+| `GET /admin/posts?type=&status=&q=&limit=&offset=` | Bài đăng | Danh sách kèm **số báo cáo** của từng bài | 🧪 |
+| `GET /admin/users?status=&q=&limit=&offset=` | Người dùng | Handle, **số điện thoại đã che** (`09•• ••• 321`), vai trò, tháng tham gia, số bài, số lần bị báo cáo, trạng thái. `status`: `ACTIVE`, `BANNED`, `REPORTED` (bị báo cáo nhiều) | 🧪 |
+| `GET /admin/actions?target_type=&range=&q=` | Nhật ký hoạt động | Thời gian, admin, hành động, đối tượng, mã báo cáo, ghi chú. `range`: `today`, `7d`, `30d` | 🧪 |
+| `GET /admin/conversations/{id}/messages?limit=100&before_id=` | Hội thoại bị báo cáo | Tin nhắn của cuộc chat **bị báo cáo**. Mỗi lần gọi **luôn ghi log** `VIEW_CONVERSATION` | 🧪 |
 
 Số điện thoại **đầy đủ không bao giờ được trả về** cho admin web; backend chỉ gửi bản đã che.
 
@@ -366,13 +369,13 @@ Ghi chú:
 
 | Endpoint | Body | Tác dụng | Trạng thái |
 |---|---|---|---|
-| `POST /admin/reports/{id}/review` | không | Đánh dấu báo cáo **đang xem xét** (`REVIEWING`). Log `REVIEW_REPORT` | 🚧 |
-| `POST /admin/reports/{id}/resolve` | `{"action": "...", "note": "..."}` | Xử lý báo cáo. `action`: `REMOVE_POST` (gỡ bài), `BAN_USER` (khóa tài khoản người bị báo cáo), `KEEP` (đã xử lý, giữ nguyên), `DISMISS` (không vi phạm, trạng thái `DISMISSED`). **`note` bắt buộc**. Người báo cáo nhận thông báo `REPORT_UPDATED` | 🚧 |
-| `POST /admin/posts/{id}/remove` | `{"reason": "..."}` | Gỡ bài (`REMOVED`), đóng các yêu cầu đang mở, **thông báo cho chủ bài kèm lý do** (`POST_REMOVED`) | 🚧 |
-| `POST /admin/posts/{id}/restore` | không | Khôi phục bài đã gỡ | 🚧 |
-| `POST /admin/users/{id}/ban` | `{"reason": "..."}` | Khóa tài khoản: đặt `is_banned`, chặn đăng nhập, gỡ các bài đang hoạt động của họ | 🚧 |
-| `POST /admin/users/{id}/unban` | `{"reason": "..."}` | Mở khóa | 🚧 |
-| `POST /admin/conversations/{id}/lock` | `{"reason": "..."}` | Khóa hội thoại: hai bên chỉ còn đọc. Log `LOCK_CONVERSATION` | 🚧 |
+| `POST /admin/reports/{id}/review` | không | Đánh dấu báo cáo **đang xem xét** (`REVIEWING`). Log `REVIEW_REPORT` | 🧪 |
+| `POST /admin/reports/{id}/resolve` | `{"action": "...", "note": "..."}` | Xử lý báo cáo. `action`: `REMOVE_POST` (gỡ bài), `BAN_USER` (khóa tài khoản người bị báo cáo), `KEEP` (đã xử lý, giữ nguyên), `DISMISS` (không vi phạm, trạng thái `DISMISSED`). **`note` bắt buộc**. Người báo cáo nhận thông báo `REPORT_UPDATED` | 🧪 |
+| `POST /admin/posts/{id}/remove` | `{"reason": "..."}` | Gỡ bài (`REMOVED`), đóng các yêu cầu đang mở, **thông báo cho chủ bài kèm lý do** (`POST_REMOVED`) | 🧪 |
+| `POST /admin/posts/{id}/restore` | không | Khôi phục bài đã gỡ | 🧪 |
+| `POST /admin/users/{id}/ban` | `{"reason": "..."}` | Khóa tài khoản: đặt `is_banned`, chặn đăng nhập, gỡ các bài đang hoạt động của họ | 🧪 |
+| `POST /admin/users/{id}/unban` | `{"reason": "..."}` | Mở khóa | 🧪 |
+| `POST /admin/conversations/{id}/lock` | `{"reason": "..."}` | Khóa hội thoại: hai bên chỉ còn đọc. Log `LOCK_CONVERSATION` | 🧪 |
 
 #### `POST /admin/reports/{id}/review` và `POST /admin/reports/{id}/resolve`: chi tiết
 
@@ -508,3 +511,46 @@ Người mất:    GET /posts/{id}/questions → POST /posts/{id}/claims
 Người nhặt:   POST /claims/{id}/decision {PASS}   → chat tự được tạo
 Hai bên:      chat (Supabase) → POST /claims/{id}/confirm (cả hai) → DONE
 ```
+
+## 7. Chi tiết bổ sung cho các API admin
+
+Các danh sách trả `{total, items}`; `total` tính sau lọc và trước phân trang.
+`limit`: 1–100, mặc định 20; `offset`: từ 0; `q`: tối đa 100 ký tự.
+Thứ tự ổn định: thời gian tạo giảm dần, rồi ID giảm dần.
+
+- **Posts:** lọc `type`, `status`; tìm không dấu trong tiêu đề, mô tả, địa điểm.
+  Mỗi phần tử có `id`, `title`, `type`, `status`, `author_id`, `author_username`,
+  `category_name`, `created_at`, `expires_at`, `report_count`.
+- **Users:** tìm handle hoặc tên hiển thị. `REPORTED` là từ **3 báo cáo** về tài khoản
+  hoặc các bài của họ, tính mọi trạng thái; có thể bao gồm tài khoản đã bị khóa.
+  Trả `phone_masked`, `joined_month`, `post_count`, `report_count`, không trả email
+  hay số điện thoại đầy đủ. Các bộ lọc ACTIVE/BANNED dựa vào tình trạng khóa.
+- **Actions:** tìm admin, hành động, nhãn đối tượng, mã báo cáo và ghi chú.
+  Có `limit`/`offset`; hành động độc lập có thể có `report_code:null`.
+- **Stats:** múi giờ Asia/Ho_Chi_Minh; “trong tuần” là bảy ngày lịch gồm hôm nay.
+  `pending_reports` tính PENDING + REVIEWING; `pending_delta` so với số báo cáo
+  đang mở tại đầu ngày hôm nay, suy ra từ thời điểm tạo/xử lý của dữ liệu còn lưu.
+  `completed_this_week` dùng thời điểm hoàn tất; `completion_rate` là phần trăm
+  bài RESOLVED trên mọi bài chưa DELETED, trả 0 khi không có bài.
+  `posts_by_day` luôn có bảy ngày theo ngày tạo bài; `recent_reports` tối đa 5.
+- **Messages:** chỉ hội thoại có báo cáo trực tiếp nhắm vào chính hội thoại đó.
+  Báo cáo bài/người dùng liên quan không tự cấp quyền xem chat. Trả mới nhất trước;
+  `before_id` là ID dương, lấy các tin có ID nhỏ hơn. Mỗi lần xem thành công ghi log.
+- **Trạng thái bài:** ẩn/xóa đóng các yêu cầu SUBMITTED/PASSED, khóa chat liên quan.
+  Hiện/khôi phục bài không mở lại yêu cầu hoặc chat đã đóng. Khôi phục chỉ áp dụng
+  cho REMOVED còn hạn, chủ bài chưa bị khóa, giữ trạng thái trước gỡ
+  (ACTIVE/ARCHIVED/RESOLVED). Với dữ liệu gỡ cũ chưa có lịch sử trạng thái, dùng
+  RESOLVED nếu có thời điểm hoàn tất; trường hợp còn lại dùng ACTIVE.
+- **Moderation:** `reason` bắt buộc 3–500 ký tự sau cắt khoảng trắng. Gỡ/khôi phục
+  bài trả `{id,status}`; khóa hội thoại trả `{id,is_locked}`; khóa/mở khóa tài khoản
+  trả `{id,is_banned,login_blocked}`. Khóa vẫn có hiệu lực trong database nếu Auth
+  lỗi (`login_blocked:false`); mở khóa Auth thất bại trả 502 và giữ nguyên khóa.
+  Mở khóa không tự khôi phục bài hoặc chat.
+
+Các endpoint mới có response schema trong OpenAPI. 🧪 là kết quả kiểm thử cục bộ,
+không đồng nghĩa mã đã được triển khai lên Render.
+
+Cron gọi `public.expire_posts()` mỗi giờ: bài ACTIVE quá hạn chuyển EXPIRED,
+yêu cầu đang mở bị đóng, chat bị khóa và chủ bài nhận thông báo POST_EXPIRED.
+Cài bằng `supabase/install_cron.sql` sau migration; người dùng ứng dụng không
+được gọi trực tiếp hàm hết hạn.
