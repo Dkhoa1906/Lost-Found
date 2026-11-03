@@ -91,3 +91,6 @@ Thumbs.db
 Desktop.ini
 *.log
 *.tmp
+
+# Local working notes and visual QA artifacts; never publish with source.
+.local-artifacts/

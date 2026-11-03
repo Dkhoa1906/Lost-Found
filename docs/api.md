@@ -55,7 +55,7 @@ Riêng lỗi 422 do FastAPI sinh ra có dạng danh sách:
 { "detail": [ { "loc": ["body", "password"], "msg": "Mật khẩu phải có cả chữ và số", "type": "value_error" } ] }
 ```
 
-**Trạng thái làm việc của từng endpoint:** ✅ đã chạy trên Render · 🚧 đang làm (ngày dự kiến ghi bên cạnh).
+**Trạng thái làm việc của từng endpoint:** ✅ đã chạy trên Render · 🧪 đã triển khai và kiểm thử cục bộ, chưa xác nhận trên Render · 🚧 đang làm (ngày dự kiến ghi bên cạnh).
 
 ---
 
