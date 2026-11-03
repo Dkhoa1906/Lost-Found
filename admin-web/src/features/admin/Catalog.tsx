@@ -8,6 +8,35 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DataTable, type Column } from "./DataTable";
 import type { PageData, Tab } from "./types";
+import { ReportDetail } from "./ReportDetail";
+import { ModerationDialog, type ModerationAction } from "./ModerationDialog";
+
+const filters: Record<Exclude<Tab, "stats">, [string, string][]> = {
+  reports: [
+    ["PENDING", "Chờ xử lý"],
+    ["REVIEWING", "Đang xem xét"],
+    ["RESOLVED", "Đã xử lý"],
+    ["DISMISSED", "Không vi phạm"],
+  ],
+  posts: [
+    ["ACTIVE", "Đang hoạt động"],
+    ["RESOLVED", "Đã trao trả"],
+    ["ARCHIVED", "Đã ẩn"],
+    ["EXPIRED", "Hết hạn"],
+    ["REMOVED", "Đã gỡ"],
+    ["DELETED", "Đã xóa"],
+  ],
+  users: [
+    ["ACTIVE", "Hoạt động"],
+    ["BANNED", "Bị khóa"],
+    ["REPORTED", "Có từ 3 báo cáo"],
+  ],
+  actions: [
+    ["today", "Hôm nay"],
+    ["7d", "7 ngày qua"],
+    ["30d", "30 ngày qua"],
+  ],
+};
 
 const columns: Record<Exclude<Tab, "stats">, Column[]> = {
   reports: [
@@ -41,15 +70,25 @@ const columns: Record<Exclude<Tab, "stats">, Column[]> = {
   ],
 };
 
-export function Catalog({ tab }: { tab: Exclude<Tab, "stats"> }) {
+export function Catalog({
+  tab,
+  initialReportId,
+}: {
+  tab: Exclude<Tab, "stats">;
+  initialReportId?: string;
+}) {
   const [query, setQuery] = useState("");
   const [draft, setDraft] = useState("");
   const [offset, setOffset] = useState(0);
+  const [status, setStatus] = useState("");
+  const [reportId, setReportId] = useState(initialReportId);
+  const [moderation, setModeration] = useState<ModerationAction>();
   const result = useQuery({
-    queryKey: [tab, query, offset],
+    queryKey: [tab, query, offset, status],
+    enabled: !reportId,
     queryFn: ({ signal }) =>
       api<PageData>(
-        `/admin/${tab}?${new URLSearchParams({ q: query, limit: "20", offset: String(offset) })}`,
+        `/admin/${tab}?${new URLSearchParams({ q: query, limit: "20", offset: String(offset), ...(status ? { [tab === "actions" ? "range" : "status"]: status } : {}) })}`,
         signal,
       ),
   });
@@ -58,6 +97,14 @@ export function Catalog({ tab }: { tab: Exclude<Tab, "stats"> }) {
     setQuery(draft.trim());
     setOffset(0);
   }
+  if (reportId)
+    return (
+      <ReportDetail
+        key={reportId}
+        id={reportId}
+        back={() => setReportId(undefined)}
+      />
+    );
   return (
     <section className="flex flex-col gap-6">
       <form onSubmit={search} className="search-form">
@@ -73,6 +120,26 @@ export function Catalog({ tab }: { tab: Exclude<Tab, "stats"> }) {
             />
           </Field>
         </FieldGroup>
+        <label className="filter-field">
+          <span id="catalog-filter-label">
+            {tab === "actions" ? "Khoảng thời gian" : "Trạng thái"}
+          </span>
+          <select
+            aria-labelledby="catalog-filter-label"
+            value={status}
+            onChange={(e) => {
+              setStatus(e.target.value);
+              setOffset(0);
+            }}
+          >
+            <option value="">Tất cả</option>
+            {filters[tab].map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </label>
         <Button type="submit" variant="outline">
           Tìm kiếm
         </Button>
@@ -90,7 +157,51 @@ export function Catalog({ tab }: { tab: Exclude<Tab, "stats"> }) {
         </Alert>
       ) : (
         <>
-          <DataTable rows={result.data.items} columns={columns[tab]} />
+          <DataTable
+            rows={result.data.items}
+            columns={columns[tab]}
+            action={
+              tab === "actions"
+                ? undefined
+                : (row) => {
+                    if (tab === "reports")
+                      return {
+                        label: "Xem",
+                        run: () => setReportId(String(row.id)),
+                      };
+                    if (
+                      tab === "posts" &&
+                      ["DELETED", "EXPIRED"].includes(row.status ?? "")
+                    )
+                      return;
+                    if (tab === "users" && row.role === "ADMIN") return;
+                    const verb =
+                      tab === "posts"
+                        ? row.status === "REMOVED"
+                          ? "restore"
+                          : "remove"
+                        : row.is_banned
+                          ? "unban"
+                          : "ban";
+                    const label = {
+                      restore: "Khôi phục",
+                      remove: "Gỡ bài",
+                      ban: "Khóa",
+                      unban: "Mở khóa",
+                    }[verb];
+                    return {
+                      label,
+                      run: () =>
+                        setModeration({
+                          label,
+                          target: row.title ?? row.username ?? String(row.id),
+                          path: `/admin/${tab}/${row.id}/${verb}`,
+                          needsReason: verb !== "restore",
+                        }),
+                    };
+                  }
+            }
+          />
           <div className="pagination">
             <p>{result.data.total} kết quả</p>
             <Button
@@ -109,6 +220,12 @@ export function Catalog({ tab }: { tab: Exclude<Tab, "stats"> }) {
             </Button>
           </div>
         </>
+      )}
+      {moderation && (
+        <ModerationDialog
+          action={moderation}
+          close={() => setModeration(undefined)}
+        />
       )}
     </section>
   );

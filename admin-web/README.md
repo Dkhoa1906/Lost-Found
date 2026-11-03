@@ -1,9 +1,11 @@
 # Lost & Found Admin
 
-Initial admin application: Supabase email/password login, rejection of non-admin
-or banned accounts, logout, and read screens for overview, reports, posts, users
-and actions. Moderation endpoints are available in the backend; moderation forms
-and report detail screens are outside this initial scaffold.
+Admin application: Supabase email/password login, rejection of non-admin or
+banned accounts, dashboard, filtered reports/posts/users and audit history.
+Report details support review and resolution, including post removal and account
+bans. Post and user lists support independent moderation with required reasons.
+Only directly reported conversations expose message inspection and locking;
+image messages are identified as images without displaying attachments.
 
 ```powershell
 cd admin-web

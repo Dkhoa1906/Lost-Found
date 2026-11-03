@@ -3,6 +3,12 @@
 > 🧪 = đã triển khai và kiểm thử cục bộ; chưa xác nhận phiên bản trên Render.
 > Các mục ✅ đã có trước đợt bổ sung này giữ nguyên trạng thái được ghi nhận.
 
+Admin-web có dashboard, bộ lọc danh sách, chi tiết và xử lý báo cáo, gỡ/khôi phục
+bài, khóa/mở khóa tài khoản và xem/khóa hội thoại bị báo cáo trực tiếp. Các luồng
+này được kiểm tra cục bộ; chưa xác nhận bản web đã triển khai. Tin nhắn ảnh chỉ
+hiển thị loại tin nhắn, chưa mở tệp đính kèm. Với báo cáo hội thoại, khóa tài khoản
+thành viên thực hiện từ danh sách người dùng.
+
 > **Người viết:** A (Backend). **Người đọc:** B, C.
 > **Quy tắc:** chốt vào ngày 4. Muốn đổi API thì **báo cả nhóm trước khi sửa**, rồi cập nhật file này trong cùng Pull Request.
 

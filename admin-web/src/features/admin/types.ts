@@ -19,7 +19,60 @@ export type CatalogRow = {
   report_code?: string | null;
   note?: string | null;
   author_username?: string;
+  author_id?: string;
   created_at?: string;
+};
+
+export type ReportUser = {
+  id: string;
+  username: string;
+  is_banned: boolean;
+  post_count: number;
+  reported_before_count: number;
+};
+export type ReportDetailData = {
+  id: string;
+  code: string;
+  reason: string;
+  description: string | null;
+  status: string;
+  created_at: string;
+  resolution_action: string | null;
+  resolution_note: string | null;
+  reporter: { id: string; username: string };
+  target: {
+    type: "POST" | "USER" | "CONVERSATION";
+    post: {
+      id: string;
+      title: string;
+      description: string;
+      status: string;
+      location_text: string;
+      image_paths: string[];
+      author: ReportUser | null;
+    } | null;
+    user: ReportUser | null;
+    conversation: {
+      id: string;
+      participants: string[];
+      is_locked: boolean;
+      message_count: number;
+    } | null;
+  };
+  reports_on_target: {
+    id: string;
+    code: string;
+    reason: string;
+    description: string | null;
+    reporter_username: string;
+  }[];
+  admin_actions: {
+    id: number;
+    action: string;
+    note: string | null;
+    created_at: string;
+    admin_username: string;
+  }[];
 };
 export type PageData = { total: number; items: CatalogRow[] };
 export type Stats = {
