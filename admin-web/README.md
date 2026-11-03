@@ -18,15 +18,12 @@ Only use a **publishable key** in frontend configuration; never a server secret.
 Changing `.env.local` requires restarting Vite.
 
 ```powershell
-npx playwright install chromium
-npm test
 npm run typecheck
 npm run build
 ```
 
-Playwright uses port 5183 and controlled external Auth/HTTP responses. Backend
-tests exercise real PostgreSQL independently; browser tests do not establish
-production authorization or deployment state. `dist/` is the static build output.
+`dist/` is the static build output. See the root [README](../README.md) for
+backend setup, configuration and the two-terminal startup instructions.
 
 The UI uses Tailwind v4, shadcn/ui Base primitives and TanStack Query. Feature
 modules own Auth and read screens; `lib/api.ts` obtains the current access token

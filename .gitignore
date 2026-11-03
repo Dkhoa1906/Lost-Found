@@ -94,3 +94,15 @@ Desktop.ini
 
 # Local working notes and visual QA artifacts; never publish with source.
 .local-artifacts/
+
+# Repository policy: agent instructions and verification tools stay local.
+/AGENTS.md
+/.agents/
+/GLOSSARY.md
+/backend/tests/
+/backend/requirements-dev.txt
+/backend/pytest.ini
+/backend/mypy.ini
+/backend/ruff.toml
+/admin-web/tests/
+/admin-web/playwright.config.ts
