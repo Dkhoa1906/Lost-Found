@@ -24,7 +24,9 @@ class PostCreate(BaseModel):
     @classmethod
     def event_time_ok(cls, v: datetime) -> datetime:
         if v.tzinfo is None:
-            raise ValueError("event_time phải có múi giờ, ví dụ 2026-10-23T08:30:00+07:00")
+            raise ValueError(
+                "event_time phải có múi giờ, ví dụ 2026-10-23T08:30:00+07:00"
+            )
         if v > datetime.now(timezone.utc) + timedelta(minutes=5):
             raise ValueError("event_time không được ở tương lai")
         return v
@@ -62,3 +64,12 @@ class PostCreatedResponse(BaseModel):
     id: str
     status: str
     expires_at: datetime
+
+
+class PostStatusChange(BaseModel):
+    status: Literal["ARCHIVED", "ACTIVE", "DELETED"]
+
+
+class PostStatusResponse(BaseModel):
+    id: str
+    status: str

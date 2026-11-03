@@ -14,7 +14,12 @@ from app.schemas.admin import (
     ResolveResponse,
     ReviewResponse,
 )
-from app.services.admin_reports import get_report_detail, list_reports, resolve_report, review_report
+from app.services.admin_reports import (
+    get_report_detail,
+    list_reports,
+    resolve_report,
+    review_report,
+)
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 

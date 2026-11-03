@@ -1,3 +1,4 @@
+from datetime import date as Date
 from datetime import datetime
 from typing import Literal
 from uuid import UUID
@@ -6,6 +7,11 @@ from pydantic import BaseModel, ConfigDict, Field
 
 ReportStatus = Literal["PENDING", "REVIEWING", "RESOLVED", "DISMISSED"]
 ReportTargetType = Literal["POST", "USER", "CONVERSATION"]
+
+
+class ModerationReason(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+    reason: str = Field(min_length=3, max_length=500)
 
 
 class UserRef(BaseModel):
@@ -56,3 +62,126 @@ class ResolveResponse(BaseModel):
     affected_reports: int
     banned_user_id: str | None = None
     login_blocked: bool | None = None
+
+
+PostStatus = Literal["ACTIVE", "ARCHIVED", "DELETED", "REMOVED", "EXPIRED", "RESOLVED"]
+
+
+class AdminPost(BaseModel):
+    id: UUID
+    type: Literal["LOST", "FOUND"]
+    title: str
+    status: PostStatus
+    author_id: UUID
+    author_username: str
+    category_name: str
+    created_at: datetime
+    expires_at: datetime
+    report_count: int
+
+
+class AdminPostsResponse(BaseModel):
+    total: int
+    items: list[AdminPost]
+
+
+class AdminUser(BaseModel):
+    id: UUID
+    username: str
+    display_name: str | None
+    role: Literal["USER", "ADMIN"]
+    is_banned: bool
+    created_at: datetime
+    joined_month: str
+    phone_masked: str | None
+    post_count: int
+    report_count: int
+
+
+class AdminUsersResponse(BaseModel):
+    total: int
+    items: list[AdminUser]
+
+
+class AdminAction(BaseModel):
+    id: int
+    admin_id: UUID
+    admin_username: str
+    action: str
+    target_type: Literal["POST", "USER", "REPORT", "CONVERSATION"]
+    target_id: UUID
+    target_label: str
+    note: str | None
+    created_at: datetime
+    report_id: UUID | None
+    report_code: str | None
+
+
+class AdminActionsResponse(BaseModel):
+    total: int
+    items: list[AdminAction]
+
+
+class PostCounts(BaseModel):
+    LOST: int
+    FOUND: int
+
+
+class DailyPostCounts(PostCounts):
+    date: Date
+
+
+class UserCounts(BaseModel):
+    total: int
+    new_this_week: int
+
+
+class RecentReport(BaseModel):
+    id: UUID
+    code: str
+    reason: str
+    status: ReportStatus
+    created_at: datetime
+    target_type: ReportTargetType
+
+
+class AdminStatsResponse(BaseModel):
+    pending_reports: int
+    pending_delta: int
+    active_posts: PostCounts
+    users: UserCounts
+    completed_this_week: int
+    completion_rate: float
+    posts_by_day: list[DailyPostCounts]
+    recent_reports: list[RecentReport]
+
+
+class AdminMessage(BaseModel):
+    id: int
+    sender_id: UUID | None
+    type: Literal["TEXT", "IMAGE", "SYSTEM"]
+    content: str | None
+    image_path: str | None
+    created_at: datetime
+    read_at: datetime | None
+
+
+class AdminMessagesResponse(BaseModel):
+    conversation_id: UUID
+    messages: list[AdminMessage]
+
+
+class ModeratedPostResponse(BaseModel):
+    id: UUID
+    status: PostStatus
+
+
+class ModeratedUserResponse(BaseModel):
+    id: UUID
+    is_banned: bool
+    login_blocked: bool
+
+
+class LockedConversationResponse(BaseModel):
+    id: UUID
+    is_locked: bool

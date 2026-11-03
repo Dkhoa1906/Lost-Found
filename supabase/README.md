@@ -1,0 +1,38 @@
+# Database operations
+
+For a new project, run `schema.sql`. Existing projects run the two migrations in
+`migrations/` in timestamp order, then `install_cron.sql` as the database owner.
+The migration files supplement this repository's existing schema/patch workflow;
+do not run `supabase db reset` or assume these are a complete baseline history.
+
+`install_cron.sql` enables pg_cron and installs the named hourly `expire-posts`
+job. Repeating it replaces the same named schedule. Inspect actual execution:
+
+```sql
+select jobid, jobname, schedule, command, active
+from cron.job where jobname = 'expire-posts';
+select status, start_time, end_time, return_message
+from cron.job_run_details
+where jobid = (select jobid from cron.job where jobname = 'expire-posts')
+order by start_time desc limit 5;
+```
+
+The expiration function runs with invoker privileges; application roles cannot
+call it. It expires only due ACTIVE posts, closes open claims, locks their chats
+and notifies authors. Locked posts are skipped and revisited on the next run.
+
+For demo data, from the repository root:
+
+```powershell
+backend/.venv/Scripts/python.exe dev/seed_demo.py
+```
+
+This provisions five dedicated Auth accounts and ten clearly labeled demo posts
+without deleting existing data. Generated credentials stay in gitignored
+`dev/demo-accounts.local.json`; repeat runs reuse them. It reads server settings
+from `backend/.env`. Do not delete that local account file to rerun the same seed.
+The SQL command `seed_demo.sql` accepts five existing Auth IDs through the
+transaction-local `app.demo_user_ids` JSON array and preserves existing profiles.
+
+`reset.sql` and `dev_clean_test_data.sql` are destructive development helpers;
+neither is part of the test or seed workflow.

@@ -9,6 +9,13 @@ from app.core.config import settings
 _pool: ConnectionPool | None = None
 
 
+def require_row(row: tuple | None) -> tuple:
+    """Express the database contract for aggregates and INSERT ... RETURNING."""
+    if row is None:
+        raise RuntimeError("Database did not return the expected row")
+    return row
+
+
 def open_pool() -> None:
     """Mở nhóm kết nối khi server khởi động (gọi trong lifespan của main.py)."""
     global _pool
