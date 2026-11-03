@@ -15,7 +15,11 @@ async def lifespan(app: FastAPI):
     close_pool()     # chạy khi server tắt
 
 
-app = FastAPI(title="Lost & Found API", lifespan=lifespan)
+app = FastAPI(
+    title="Lost & Found API",
+    lifespan=lifespan,
+    swagger_ui_parameters={"persistAuthorization": True},  # nhớ token sau khi tải lại trang /docs
+)
 app.include_router(auth.router)
 app.include_router(me.router)
 app.include_router(posts.router)

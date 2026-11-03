@@ -326,7 +326,7 @@ Tham số của danh sách: `status` (`PENDING`, `REVIEWING`, `RESOLVED`, `DISMI
 {
   "id": "4288d74f-...", "code": "R-1042", "reason": "MONEY_REQUEST", "status": "PENDING",
   "description": "Bạn này đòi tiền chuộc", "created_at": "...",
-  "handled_by": null, "handled_at": null, "resolution_note": null,
+  "handled_by": null, "handled_at": null, "resolution_action": null, "resolution_note": null,
   "reporter": { "id": "...", "username": "thulan_k", "display_name": "Thu Lan" },
   "target": {
     "type": "POST",
@@ -359,6 +359,8 @@ Ghi chú:
 - `image_paths` ghép với địa chỉ ảnh công khai như mục 4.5.
 - `reported_before_count`: số báo cáo **khác** về người này hoặc các bài của họ.
 - Không có email hay số điện thoại trong phản hồi.
+- `resolution_action` (`REMOVE_POST`, `BAN_USER`, `KEEP`, `DISMISS`) và `resolution_note` chỉ có giá trị sau khi báo cáo đã được xử lý. `resolution_note` là **ghi chú nội bộ của admin**, không bao giờ hiển thị cho người báo cáo.
+- `admin_actions` gồm mọi hành động đã thực hiện trên **các báo cáo cùng đối tượng** (đang xem xét, gỡ bài, khóa tài khoản...), mới nhất trước.
 
 **Thay đổi (đều ghi nhật ký):**
 
@@ -371,6 +373,43 @@ Ghi chú:
 | `POST /admin/users/{id}/ban` | `{"reason": "..."}` | Khóa tài khoản: đặt `is_banned`, chặn đăng nhập, gỡ các bài đang hoạt động của họ | 🚧 |
 | `POST /admin/users/{id}/unban` | `{"reason": "..."}` | Mở khóa | 🚧 |
 | `POST /admin/conversations/{id}/lock` | `{"reason": "..."}` | Khóa hội thoại: hai bên chỉ còn đọc. Log `LOCK_CONVERSATION` | 🚧 |
+
+#### `POST /admin/reports/{id}/review` và `POST /admin/reports/{id}/resolve`: chi tiết
+
+**Quy tắc chung:** quyết định áp dụng cho **mọi báo cáo đang mở về cùng đối tượng**, không chỉ báo cáo đang xem. Ví dụ bài bị 3 người báo cáo, admin xử lý một lần thì cả 3 cùng được đóng và cả 3 người báo cáo cùng nhận thông báo. `affected_reports` cho biết số báo cáo bị tác động.
+
+**`review`** (không cần body): chuyển các báo cáo `PENDING` về cùng đối tượng sang `REVIEWING`, ghi tên admin đang xem xét. Gọi lại khi đã `REVIEWING` vẫn trả `200` với `affected_reports: 0`.
+```json
+// 200 OK
+{ "report_id": "...", "code": "R-1042", "status": "REVIEWING", "affected_reports": 3 }
+```
+Lỗi: `403` · `404` · `409` báo cáo đã được xử lý.
+
+**`resolve`:**
+```json
+// Request
+{ "action": "REMOVE_POST", "note": "Bài có yêu cầu chuyển khoản trước", "user_id": null }
+```
+| `action` | Tác dụng | Điều kiện |
+|---|---|---|
+| `REMOVE_POST` | Bài thành `REMOVED` và lưu `note` làm lý do; đóng các yêu cầu xác minh đang mở của bài (chat bị khóa); **chủ bài nhận thông báo `POST_REMOVED` kèm lý do** | Báo cáo phải nhắm vào một bài đăng |
+| `BAN_USER` | Khóa người bị báo cáo: đặt `is_banned`, gỡ các bài đang hoạt động của họ, đóng mọi yêu cầu xác minh đang mở của họ, chặn đăng nhập ở Supabase Auth | Báo cáo bài: khóa **chủ bài**. Báo cáo người dùng: khóa người đó. **Báo cáo hội thoại: bắt buộc gửi `user_id`** là một trong hai người trong cuộc trò chuyện |
+| `KEEP` | Đánh dấu đã xử lý, giữ nguyên nội dung | |
+| `DISMISS` | Đóng báo cáo với trạng thái `DISMISSED` (không vi phạm) | |
+
+`note` **bắt buộc**, 3–500 ký tự. Với `REMOVE_POST`, `note` được gửi cho chủ bài làm lý do gỡ nên cần viết lịch sự; với các hành động khác `note` chỉ lưu nội bộ vào nhật ký.
+
+Người báo cáo nhận thông báo `REPORT_UPDATED` với nội dung theo kết quả: "Bài đăng bị báo cáo đã được gỡ", "Tài khoản vi phạm đã bị khóa", "Đã xem xét, nội dung được giữ nguyên", "Không phát hiện vi phạm".
+```json
+// 200 OK
+{
+  "report_id": "...", "code": "R-1042", "status": "RESOLVED", "resolution_action": "REMOVE_POST",
+  "affected_reports": 3, "banned_user_id": null, "login_blocked": null
+}
+```
+Với `BAN_USER`: `banned_user_id` là ID người bị khóa, `login_blocked` cho biết đã chặn được đăng nhập ở Supabase Auth chưa. Nếu là `false`, tài khoản **vẫn bị khóa trong hệ thống** (mọi API đã từ chối họ) nhưng cần kiểm tra thủ công trong Supabase Authentication.
+
+Lỗi: `400` `REMOVE_POST` cho báo cáo không phải về bài, người bị khóa không thuộc cuộc trò chuyện, hoặc định khóa một quản trị viên · `403` · `404` · `409` báo cáo đã được xử lý, bài đã bị gỡ hoặc xóa, hoặc tài khoản đã bị khóa · `422` thiếu hoặc quá ngắn `note`, hoặc thiếu `user_id` khi báo cáo hội thoại.
 
 Ví dụ phản hồi của `GET /admin/conversations/{id}/messages`:
 ```json
@@ -420,7 +459,7 @@ Bài không có tọa độ tự xếp cuối khi sắp xếp `NEAREST`. Khoản
 | `claims`, `claim_answers` | Chỉ chủ bài và claimant |
 | `conversations`, `messages` | Chỉ hai người trong cuộc |
 | `notifications` | Chỉ của chính mình |
-| `reports` | Chỉ báo cáo mình đã gửi (admin xem hết) |
+| `reports` | Chỉ báo cáo mình đã gửi. Màn "Báo cáo đã gửi" dùng `status` và `resolution_action`: `REMOVE_POST` → "Đã gỡ bài", `BAN_USER` → "Đã khóa tài khoản", `KEEP` → "Giữ nguyên", `DISMISS` → "Không vi phạm". Ghi chú nội bộ của admin không bao giờ gửi cho người báo cáo |
 
 Bảng `verification_questions` chỉ **chủ bài** đọc trực tiếp được (để xem lại câu hỏi của chính bài mình). Người muốn trả lời xác minh phải dùng `GET /posts/{id}/questions`.
 

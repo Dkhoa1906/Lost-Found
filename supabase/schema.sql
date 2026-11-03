@@ -225,6 +225,7 @@ create table public.reports (
   handled_by             uuid references public.profiles (id),
   handled_at             timestamptz,
   resolution_note        text,
+  resolution_action      text check (resolution_action in ('REMOVE_POST', 'BAN_USER', 'KEEP', 'DISMISS')),  -- kết quả hiển thị cho người báo cáo
   created_at             timestamptz not null default now(),
   -- đúng 1 đối tượng bị báo cáo
   check (num_nonnulls(target_post_id, target_user_id, target_conversation_id) = 1)

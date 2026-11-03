@@ -18,6 +18,8 @@ local.properties
 # Khóa ký ứng dụng Android
 *.keystore
 *.jks
+# File cấu hình cá nhân khi phát triển (chứa mật khẩu tài khoản thử, token): KHÔNG commit
+*.local.json
 
 # ---------------------------------------------------------------------
 # 2. PYTHON / FASTAPI (backend/)
