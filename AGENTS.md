@@ -51,7 +51,30 @@ For admin UI work, apply the local `ui-ux-pro-max` skill when available. Use its
 
 Admin web: `https://lost-found-admin.onrender.com`; API: `https://lost-found-api-ph8v.onrender.com`. Render deploys the integration branch `develop`. Vite variables are baked into the build; backend CORS must allow the frontend origin. Never merge or deploy solely to make a local UI check pass.
 
-After completion and review, consolidate a fresh local handoff with branch/PR, verification and outstanding work. Delete old context files only within the exact user-approved scope, after checking resolved paths stay inside that directory. Never treat cleanup as permission to remove source, docs, tests, credentials or installed skills.
+After completion and review, consolidate a fresh local handoff with branch/PR, verification and outstanding work. Follow the workflow and cleanup scope below; preserve project-wide context before removing obsolete feature artifacts.
+
+## Quy trình bắt buộc cho mỗi vòng công việc
+
+Áp dụng tuần tự `domain-modeling` → `tdd` → `implement` kết hợp `codebase-design` → `code-review` → sửa lỗi bằng `diagnosing-bugs` khi cần → PR → cập nhật handoff và dọn artifact. Đọc `SKILL.md` của skill tương ứng khi sử dụng; nếu không có skill trên máy, vẫn thực hiện các bước dưới đây và ghi rõ giới hạn, không tự cài hoặc giả nhận đã dùng skill. Hướng dẫn của người dùng và hợp đồng hiện hành của repo được ưu tiên.
+
+1. **Đọc lại ngữ cảnh và xác định việc tiếp theo.** Đọc `.local-artifacts/handoff.md`, `AGENTS.md`, `README.md`, `docs/api.md`, `docs/decisions.md`, kế hoạch 30 ngày và issue/tài liệu liên quan; đối chiếu với code, trạng thái Git/PR và bằng chứng kiểm chứng. Đọc `GLOSSARY.md` nếu có. Dùng `domain-modeling` để làm rõ thuật ngữ, thực thể, quan hệ, trạng thái và quy tắc nghiệp vụ khi chúng thay đổi hoặc còn mơ hồ; cập nhật glossary ngay khi chốt thuật ngữ, ghi quyết định kiến trúc khi có đánh đổi đáng lưu lại. Không dùng glossary thay cho đặc tả hay ghi chú triển khai. Chọn việc chưa hoàn tất có ưu tiên cao nhất trong phạm vi đã được giao, ghi mục tiêu và tiêu chí nghiệm thu ngắn gọn trong handoff local. Không suy ra đã deploy từ việc merge PR.
+
+2. **Chuẩn bị nhánh và viết test trước code.** Bắt đầu mỗi tính năng trên nhánh riêng từ `develop` đã cập nhật; ghi SHA base cố định để review. Dùng `tdd` cho thay đổi hành vi: xác định public interface cần kiểm thử và kết quả người dùng quan sát được. Tái sử dụng phạm vi HTTP/browser đã được người dùng chấp thuận trong repo hoặc handoff; chỉ hỏi khi thật sự cần bổ sung một interface chưa được chấp thuận. Với mỗi lát hành vi, viết một test, chạy để thấy lỗi đúng do hành vi còn thiếu, rồi mới sửa production code. Test lỗi setup/môi trường chưa phải bằng chứng red. Không viết hàng loạt test rồi mới triển khai tất cả. Thay đổi chỉ có tài liệu không cần tạo test hành vi; kiểm tra diff, tính nhất quán và liên kết/tham chiếu liên quan.
+
+3. **Triển khai bằng `implement` và `codebase-design`.** Viết thay đổi nhỏ nhất để test hiện tại đạt, chạy lại đến green rồi mới chuyển sang lát tiếp theo. Thiết kế module có interface nhỏ, che giấu logic phức tạp, tập trung quy tắc nghiệp vụ tại nơi chịu trách nhiệm; giữ router mỏng, không thêm abstraction hoặc tính năng suy đoán. Test qua cùng public interface mà bên gọi sử dụng; mock ở ranh giới Auth/API bên ngoài, không mock nội bộ để làm test xanh. Chạy test tập trung và typecheck trong quá trình làm; chạy regression và các kiểm tra bắt buộc phù hợp khi hoàn tất. Với UI, áp dụng hướng dẫn và kiểm tra trình duyệt/kích thước màn hình đã quy định ở trên.
+
+4. **Review và sửa lỗi cho đến khi đạt.** Dùng `code-review` trên toàn bộ diff so với SHA base đã ghim, kiểm tra độc lập hai trục: chuẩn repo và yêu cầu/tiêu chí nghiệm thu. Dùng sub-agent review song song nếu công cụ hỗ trợ; nếu không, review từng trục và ghi rõ giới hạn. Nếu phát hiện bug, dùng `diagnosing-bugs`: tạo vòng kiểm tra tái hiện đúng lỗi, thu nhỏ tình huống, nêu giả thuyết có thể kiểm chứng, kiểm tra từng giả thuyết rồi sửa nguyên nhân. Bổ sung test hồi quy thất bại trước bản sửa tại interface phù hợp, chạy lại tình huống ban đầu và kiểm tra liên quan. Với lỗi câu chữ/tài liệu, sửa rồi rà soát tính nhất quán. Chỉ refactor sau khi các test đã green; review lại phần thay đổi và chạy lại kiểm tra bị ảnh hưởng. Giải quyết mọi phát hiện quan trọng trước PR; ghi trung thực giới hạn còn lại.
+
+5. **Hoàn tất PR và bàn giao.** Cập nhật hợp đồng/trạng thái triển khai khi có thay đổi và bằng chứng tương ứng. Commit đúng các source/docs được phép chia sẻ, mở PR vào `develop` với mục tiêu, thay đổi, kết quả kiểm tra, review và phần còn chờ. Không tự merge chỉ để chuyển sang vòng tiếp theo. Cập nhật handoff local với nhánh, SHA base/HEAD, URL và trạng thái PR, bằng chứng local/merged/deployed riêng biệt, quyết định còn hiệu lực, phụ thuộc, giới hạn và việc tiếp theo. Giữ test hồi quy local theo chính sách repo.
+
+6. **Dọn artifact rồi lặp lại.** Sau khi PR đã tạo thành công và handoff mới đã được kiểm tra, áp dụng đúng phạm vi dọn dẹp dưới đây. Đọc lại handoff/tài liệu trước vòng kế tiếp; tiếp tục các việc thuộc phạm vi đã được người dùng giao cho đến khi đạt mục tiêu. Khi việc tiếp theo phụ thuộc PR chưa merge, giữ trạng thái chờ trong handoff hoặc chọn việc độc lập trong phạm vi đã giao; không trộn tính năng mới vào nhánh còn dang dở. Nếu thiếu quyền hoặc thông tin thiết yếu, ghi rõ điểm chặn và tiếp tục phần độc lập có thể làm.
+
+### Phạm vi dọn dẹp đã được người dùng chấp thuận
+
+- Được tự dọn file/context và thư mục tạm do agent tạo cho một tính năng đã xong PR, khi đã đọc nội dung, xác nhận hết tác dụng và chuyển mọi thông tin còn cần sang handoff. Ví dụ: bản nháp PR, helper tạo PR đã hoàn tất, kế hoạch/context trùng lặp, log debug và output thử nghiệm có thể tạo lại. Ưu tiên đặt artifact mới trong `.local-artifacts/<tên-tính-năng>/`; với artifact cũ ở `.local-artifacts/`, xét từng đường dẫn cụ thể.
+- Trước khi xóa, ghi danh sách đường dẫn và lý do trong handoff; dùng đường dẫn tuyệt đối đã resolve, kiểm tra chúng nằm trong workspace và đúng thư mục artifact của tính năng. Không đi qua symlink/junction ra ngoài phạm vi. Với thư mục, kiểm tra toàn bộ nội dung trước khi xóa đệ quy; không xóa theo tuổi file, wildcard rộng hoặc `git clean` toàn repo.
+- **Tuyệt đối giữ ngữ cảnh toàn dự án:** `.local-artifacts/handoff.md` hiện hành, mục tiêu/phạm vi MVP, quyết định còn hiệu lực, hợp đồng API, trạng thái tích hợp/deployment đã kiểm chứng, phần chưa xong và phụ thuộc của nhóm. Không xóa một context chỉ vì tên/ngày đã cũ; hợp nhất thông tin còn giá trị rồi mới dọn bản thừa. Giữ bằng chứng kiểm tra duy nhất nếu vẫn cần cho review hoặc việc còn chờ.
+- Quyền dọn artifact không cho phép xóa source, `docs/`, `AGENTS.md`, `GLOSSARY.md`, tests/test config, `.agents/` và skills, credentials/`.env`/account config, dữ liệu database, môi trường đã cài, hoặc tài sản thiết kế còn được tham chiếu. File ngoài phạm vi trên hoặc chưa rõ còn giá trị phải giữ lại và hỏi trước nếu cần xóa. Quyền dọn dẹp này thay thế yêu cầu xin phép lại cho từng artifact đủ điều kiện; không mở rộng quyền sửa lịch sử Git hay dữ liệu thật.
 
 ## Security & Architecture
 
@@ -64,7 +87,7 @@ Client reads use Supabase with RLS; business state changes go through FastAPI. K
    - Tuyệt đối KHÔNG dừng lại giữa chừng để hỏi những câu mang tính xin phép hiển nhiên.
 
 2. **Chỉ được phép dừng lại xin ý kiến khi:**
-   - Thực hiện lệnh xóa file hoặc thư mục (`rm`, `Remove-Item`, `git clean`).
+   - Xóa file hoặc thư mục ngoài phạm vi artifact đã được chấp thuận ở trên, hoặc chưa chứng minh được là hết tác dụng (`rm`, `Remove-Item`, `git clean`).
    - Can thiệp vào lịch sử Git có nguy cơ mất dữ liệu (`git reset --hard`, `git push --force`).
    - Thao tác liên quan đến xóa bảng, drop cột hoặc ghi đè dữ liệu trên cơ sở dữ liệu Supabase/PostgreSQL.
    - Xuất hiện xung đột kiến trúc nghiêm trọng ngoài phạm vi quy định của `docs/`.
