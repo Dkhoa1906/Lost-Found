@@ -14,9 +14,9 @@ Catalogs share a search/filter toolbar with a reset action and a result range.
 On phones, table rows reflow into labeled records with visible action buttons;
 touch controls are at least 44px high. Keyboard users can skip navigation and
 focus moves to the destination heading. Canceling a moderation dialog restores
-focus to its trigger. These interface changes are verified on the live frontend
-at commit `de44b1e` (2026-11-04). The backend remains at `37a0405`; its code and
-database files are unchanged between these commits.
+focus to its trigger. These interface changes are verified on the live release,
+now at `c136d81` (2026-11-05). The backend remains at `37a0405`; application code
+and SQL scripts are unchanged between these commits.
 
 ```powershell
 cd admin-web
@@ -61,8 +61,19 @@ resolution and audit history. External Auth is controlled; business endpoint
 responses are real. This test uses a separate loopback CORS wrapper and dummy
 identities, so it does not establish deployed Auth/CORS mutation behavior.
 Browser plugin was unavailable; validation used local Playwright Chromium.
-These results do not verify moderation mutations or Android integration on the
-deployed system; see [API verification status](../docs/api.md).
+On 2026-11-05, real HTTP/SDK checks with Supabase Auth verified registration,
+claim/PASS, Realtime messages/notifications, two-party DONE, report review/removal,
+post restore, account ban/unban and audit on two new QA accounts/posts. Existing
+accounts/posts were untouched; QA data is retained on the current project rather
+than a separate staging environment. API ban rejected an existing JWT; Auth ban
+rejected password login, and unban restored it.
+
+Live browser checks also passed post remove/restore, account ban/unban and logout
+with real Auth/CORS, no mocked responses and no console/page errors. The runner
+allowed business writes only to the retained QA post/account URLs. The 375px
+user list had no horizontal overflow. This does not verify every report action
+in the live browser, Android integration or Storage uploads; see
+[API verification status](../docs/api.md).
 
 The UI uses Tailwind v4, shadcn/ui Base primitives and TanStack Query. Feature
 modules own Auth and read screens; `lib/api.ts` obtains the current access token

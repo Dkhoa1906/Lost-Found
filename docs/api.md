@@ -12,11 +12,12 @@ thành viên thực hiện từ danh sách người dùng.
 Nâng cấp giao diện danh sách đã được kiểm tra trên bản live: xóa bộ lọc, hiển thị khoảng
 kết quả, hàng dữ liệu dạng dọc trên điện thoại, bỏ qua điều hướng bằng bàn phím
 và khôi phục focus sau khi hủy kiểm duyệt. Các cải tiến này giữ nguyên hợp đồng
-API bên dưới. Frontend Render đang chạy commit `de44b1e`, chứa PR #20 và #21.
+API bên dưới. Frontend Render đang chạy commit `c136d81`, chứa PR #20–#22.
 
-**Triển khai admin-web (04/11/2026):** https://lost-found-admin.onrender.com,
-Render Static Site từ `develop`, commit `de44b1e`. Backend đang chạy `37a0405`;
-không có thay đổi trong `backend/` hoặc `supabase/` từ commit đó đến `de44b1e`.
+**Triển khai admin-web (05/11/2026):** https://lost-found-admin.onrender.com,
+Render Static Site từ `develop`, commit `c136d81`. Backend đang chạy `37a0405`;
+code backend và các SQL database không đổi từ commit đó đến `c136d81`
+(các cập nhật tài liệu không yêu cầu triển khai lại backend).
 Kiểm tra trực tiếp đã đạt: `/health`, chặn request chưa đăng nhập (`401`), CORS
 preflight từ domain admin-web, đăng nhập admin, dashboard (`GET /admin/stats`),
 danh sách báo cáo/bài đăng/người dùng/nhật ký, chi tiết báo cáo và đăng xuất.
@@ -26,17 +27,42 @@ bốn catalog ở 375/768/1024/1440px không tràn ngang; không có lỗi conso
 JavaScript chưa xử lý. Dữ liệu live chưa đủ mở trang hai; nút Tiếp bị khóa đúng
 ở trang cuối, còn chuyển trang được kiểm tra bằng UI mock cục bộ.
 
-Kiểm chứng cục bộ cùng đợt: 77 test backend trên PostgreSQL test cô lập và mypy
-đạt; 19 test Playwright với Auth/API được kiểm soát và build TypeScript/Vite đạt.
+Hồi quy cục bộ gần nhất (04/11/2026): 77 test backend trên PostgreSQL test cô lập
+và mypy đạt; 19 test Playwright với Auth/API được kiểm soát và build TypeScript/Vite đạt.
 Đã bổ sung kiểm tra HTTP luồng Found → xác minh → hai bên xác nhận, xác nhận
 lặp lại và giới hạn hai lượt Fail/hủy trên bài Lost không có câu hỏi. Đây là
 kiểm chứng hành vi hiện có, không thay đổi code nghiệp vụ. Một test tích hợp
 Playwright → FastAPI thật → PostgreSQL test cô lập kiểm tra gỡ/khôi phục bài,
 khóa/mở khóa tài khoản, nhận/xử lý báo cáo và nhật ký. Chỉ Supabase Auth và danh
 tính test được giả lập; không mock dữ liệu trả về của endpoint nghiệp vụ. Test
-dùng origin loopback riêng, không thay thế kiểm chứng CORS live. Chưa kiểm tra lại các
-thao tác kiểm duyệt ghi dữ liệu trên môi trường live tách biệt hoặc tích hợp
-Android; các dấu 🧪 bên dưới không tự chuyển thành ✅ từ lần kiểm tra này.
+dùng origin loopback riêng, không thay thế kiểm chứng CORS live.
+
+**QA với Auth thật (05/11/2026):** theo lựa chọn của người dùng, đã tạo hai tài
+khoản QA mới và hai bài đánh dấu riêng trên project hiện tại. Kiểm tra HTTP/SDK
+đạt đăng ký/đăng nhập, tạo Found, lấy câu hỏi qua API (đọc trực tiếp từ claimant
+bị RLS ẩn), gửi/duyệt claim, nhận sự kiện claim và tin nhắn qua Realtime, thông
+báo `CLAIM_RECEIVED` và `POST_DONE`, hai bên xác nhận và xác nhận lặp lại.
+Sau DONE, bài `RESOLVED`, chat bị khóa và gửi tin trả đúng lỗi RLS `42501`.
+
+Trên bài QA thứ hai, đã tạo báo cáo, nhận xem xét, xử lý `REMOVE_POST`, khôi
+phục bài và kiểm tra nhật ký. Khóa tài khoản QA chặn đăng nhập Auth thật
+(`user_banned`) và chặn JWT đã cấp qua API; mở khóa cho đăng nhập lại thành công.
+Đọc lại xác nhận có `POST_REMOVED`/`REPORT_UPDATED`; người khác không đọc được
+thông báo riêng. Admin không đọc thẳng được hội thoại qua RLS; API trả `403`
+với chat chưa bị báo cáo. Chỉ các endpoint đã có bằng chứng thành công được
+cập nhật ✅; dấu này không có nghĩa mọi biến thể đều đã kiểm tra trên live.
+
+Hai tài khoản QA và dữ liệu được giữ để truy vết: một bài `RESOLVED`, một bài
+`REMOVED`; tài khoản QA đã mở khóa. Không sửa tài khoản/bài có sẵn, không chạy
+seed/reset hoặc đổi schema. Đây là dữ liệu tách biệt trên project hiện tại,
+không phải một môi trường staging riêng.
+
+Trên web admin thật, Playwright đã kiểm tra gỡ/khôi phục đúng bài QA, khóa/mở
+khóa đúng tài khoản QA và đăng xuất qua Auth/CORS thật, không mock response.
+Chỉ các URL ghi tới hai đối tượng QA đó được cho phép trong kịch bản. Các request
+ghi trả `200`, đồng bộ Auth thành công; không lỗi console/page và danh sách user
+375px không tràn ngang. Chưa kiểm tra Android/hai điện thoại, upload ảnh Storage,
+hoặc mọi nhánh xử lý báo cáo từ UI live.
 
 > **Người viết:** A (Backend). **Người đọc:** B, C.
 > **Quy tắc:** chốt vào ngày 4. Muốn đổi API thì **báo cả nhóm trước khi sửa**, rồi cập nhật file này trong cùng Pull Request.
@@ -269,7 +295,7 @@ Lỗi: `403` bạn không phải người gửi yêu cầu · `404` · `409` yê
 
 ### 3.5 Trao trả và DONE
 
-#### `POST /claims/{claim_id}/confirm` 🧪
+#### `POST /claims/{claim_id}/confirm` ✅
 Mỗi bên bấm xác nhận của mình. Không cần body. Backend tự biết bạn là chủ bài hay claimant qua token. **Gọi nhiều lần không gây lỗi.** Yêu cầu phải đang ở trạng thái `PASSED`.
 ```json
 // 200 OK
@@ -285,7 +311,7 @@ Lỗi: `403` bạn không thuộc yêu cầu này · `404` · `409` yêu cầu c
 
 ### 3.6 Báo cáo
 
-#### `POST /reports` 🧪
+#### `POST /reports` ✅
 ```json
 // Request
 {
@@ -323,12 +349,12 @@ Người không phải admin gọi các endpoint này nhận `403`. **Mọi hàn
 
 | Endpoint | Màn Figma | Trả về | Trạng thái |
 |---|---|---|---|
-| `GET /admin/stats` | Tổng quan | Số báo cáo chờ xử lý (và chênh so với hôm qua), số bài đang hiển thị (tách Lost, Found), số người dùng (và số mới trong tuần), số bài DONE trong tuần và tỷ lệ trao trả, số bài mỗi ngày trong 7 ngày (Lost, Found), 5 báo cáo mới nhất | 🧪 |
-| `GET /admin/reports?status=&type=&q=&limit=&offset=` | Báo cáo | Danh sách: mã `R-<report_no>`, loại (bài, tài khoản, hội thoại), đối tượng, lý do, handle người báo cáo, thời gian, trạng thái. `status`: `PENDING`, `REVIEWING`, `RESOLVED`, `DISMISSED` | 🧪 |
-| `GET /admin/reports/{id}` | Chi tiết báo cáo | Báo cáo, bài hoặc tài khoản bị báo cáo (kèm số bài và số lần bị báo cáo của người đăng), **mọi báo cáo khác về cùng đối tượng**, tóm tắt hội thoại liên quan (số tin, tin cuối), nhật ký xử lý | 🧪 |
-| `GET /admin/posts?type=&status=&q=&limit=&offset=` | Bài đăng | Danh sách kèm **số báo cáo** của từng bài | 🧪 |
-| `GET /admin/users?status=&q=&limit=&offset=` | Người dùng | Handle, **số điện thoại đã che** (`09•• ••• 321`), vai trò, tháng tham gia, số bài, số lần bị báo cáo, trạng thái. `status`: `ACTIVE`, `BANNED`, `REPORTED` (bị báo cáo nhiều) | 🧪 |
-| `GET /admin/actions?target_type=&range=&q=` | Nhật ký hoạt động | Thời gian, admin, hành động, đối tượng, mã báo cáo, ghi chú. `range`: `today`, `7d`, `30d` | 🧪 |
+| `GET /admin/stats` | Tổng quan | Số báo cáo chờ xử lý (và chênh so với hôm qua), số bài đang hiển thị (tách Lost, Found), số người dùng (và số mới trong tuần), số bài DONE trong tuần và tỷ lệ trao trả, số bài mỗi ngày trong 7 ngày (Lost, Found), 5 báo cáo mới nhất | ✅ |
+| `GET /admin/reports?status=&type=&q=&limit=&offset=` | Báo cáo | Danh sách: mã `R-<report_no>`, loại (bài, tài khoản, hội thoại), đối tượng, lý do, handle người báo cáo, thời gian, trạng thái. `status`: `PENDING`, `REVIEWING`, `RESOLVED`, `DISMISSED` | ✅ |
+| `GET /admin/reports/{id}` | Chi tiết báo cáo | Báo cáo, bài hoặc tài khoản bị báo cáo (kèm số bài và số lần bị báo cáo của người đăng), **mọi báo cáo khác về cùng đối tượng**, tóm tắt hội thoại liên quan (số tin, tin cuối), nhật ký xử lý | ✅ |
+| `GET /admin/posts?type=&status=&q=&limit=&offset=` | Bài đăng | Danh sách kèm **số báo cáo** của từng bài | ✅ |
+| `GET /admin/users?status=&q=&limit=&offset=` | Người dùng | Handle, **số điện thoại đã che** (`09•• ••• 321`), vai trò, tháng tham gia, số bài, số lần bị báo cáo, trạng thái. `status`: `ACTIVE`, `BANNED`, `REPORTED` (bị báo cáo nhiều) | ✅ |
+| `GET /admin/actions?target_type=&range=&q=` | Nhật ký hoạt động | Thời gian, admin, hành động, đối tượng, mã báo cáo, ghi chú. `range`: `today`, `7d`, `30d` | ✅ |
 | `GET /admin/conversations/{id}/messages?limit=100&before_id=` | Hội thoại bị báo cáo | Tin nhắn của cuộc chat **bị báo cáo**. Mỗi lần gọi **luôn ghi log** `VIEW_CONVERSATION` | 🧪 |
 
 Số điện thoại **đầy đủ không bao giờ được trả về** cho admin web; backend chỉ gửi bản đã che.
@@ -404,12 +430,12 @@ Ghi chú:
 
 | Endpoint | Body | Tác dụng | Trạng thái |
 |---|---|---|---|
-| `POST /admin/reports/{id}/review` | không | Đánh dấu báo cáo **đang xem xét** (`REVIEWING`). Log `REVIEW_REPORT` | 🧪 |
-| `POST /admin/reports/{id}/resolve` | `{"action": "...", "note": "..."}` | Xử lý báo cáo. `action`: `REMOVE_POST` (gỡ bài), `BAN_USER` (khóa tài khoản người bị báo cáo), `KEEP` (đã xử lý, giữ nguyên), `DISMISS` (không vi phạm, trạng thái `DISMISSED`). **`note` bắt buộc**. Người báo cáo nhận thông báo `REPORT_UPDATED` | 🧪 |
-| `POST /admin/posts/{id}/remove` | `{"reason": "..."}` | Gỡ bài (`REMOVED`), đóng các yêu cầu đang mở, **thông báo cho chủ bài kèm lý do** (`POST_REMOVED`) | 🧪 |
-| `POST /admin/posts/{id}/restore` | không | Khôi phục bài đã gỡ | 🧪 |
-| `POST /admin/users/{id}/ban` | `{"reason": "..."}` | Khóa tài khoản: đặt `is_banned`, chặn đăng nhập, gỡ các bài đang hoạt động của họ | 🧪 |
-| `POST /admin/users/{id}/unban` | `{"reason": "..."}` | Mở khóa | 🧪 |
+| `POST /admin/reports/{id}/review` | không | Đánh dấu báo cáo **đang xem xét** (`REVIEWING`). Log `REVIEW_REPORT` | ✅ |
+| `POST /admin/reports/{id}/resolve` | `{"action": "...", "note": "..."}` | Xử lý báo cáo. `action`: `REMOVE_POST` (gỡ bài), `BAN_USER` (khóa tài khoản người bị báo cáo), `KEEP` (đã xử lý, giữ nguyên), `DISMISS` (không vi phạm, trạng thái `DISMISSED`). **`note` bắt buộc**. Người báo cáo nhận thông báo `REPORT_UPDATED` | ✅ |
+| `POST /admin/posts/{id}/remove` | `{"reason": "..."}` | Gỡ bài (`REMOVED`), đóng các yêu cầu đang mở, **thông báo cho chủ bài kèm lý do** (`POST_REMOVED`) | ✅ |
+| `POST /admin/posts/{id}/restore` | không | Khôi phục bài đã gỡ | ✅ |
+| `POST /admin/users/{id}/ban` | `{"reason": "..."}` | Khóa tài khoản: đặt `is_banned`, chặn đăng nhập, gỡ các bài đang hoạt động của họ | ✅ |
+| `POST /admin/users/{id}/unban` | `{"reason": "..."}` | Mở khóa | ✅ |
 | `POST /admin/conversations/{id}/lock` | `{"reason": "..."}` | Khóa hội thoại: hai bên chỉ còn đọc. Log `LOCK_CONVERSATION` | 🧪 |
 
 #### `POST /admin/reports/{id}/review` và `POST /admin/reports/{id}/resolve`: chi tiết

@@ -69,6 +69,8 @@ After completion and review, consolidate a fresh local handoff with branch/PR, v
 
 6. **Dọn artifact rồi lặp lại.** Sau khi PR đã tạo thành công và handoff mới đã được kiểm tra, áp dụng đúng phạm vi dọn dẹp dưới đây. Đọc lại handoff/tài liệu trước vòng kế tiếp; tiếp tục các việc thuộc phạm vi đã được người dùng giao cho đến khi đạt mục tiêu. Khi việc tiếp theo phụ thuộc PR chưa merge, giữ trạng thái chờ trong handoff hoặc chọn việc độc lập trong phạm vi đã giao; không trộn tính năng mới vào nhánh còn dang dở. Nếu thiếu quyền hoặc thông tin thiết yếu, ghi rõ điểm chặn và tiếp tục phần độc lập có thể làm.
 
+Sau mỗi vòng hoàn tất, giải thích bằng tiếng Việt dễ hiểu: đã làm hoặc sửa gì, thay đổi đó giúp người dùng/nhóm giải quyết vấn đề nào, đã kiểm tra bằng cách nào và còn giới hạn gì. Kèm nhánh/PR và trạng thái merge/deploy thực tế, rồi nêu rõ nhiệm vụ kế tiếp, lý do ưu tiên và phụ thuộc cần có. Không chỉ liệt kê tên file, thuật ngữ kỹ thuật hoặc số test mà thiếu ý nghĩa của kết quả. Lưu cùng thông tin trong handoff để vòng sau tiếp tục đúng việc.
+
 ### Phạm vi dọn dẹp đã được người dùng chấp thuận
 
 - Được tự dọn file/context và thư mục tạm do agent tạo cho một tính năng đã xong PR, khi đã đọc nội dung, xác nhận hết tác dụng và chuyển mọi thông tin còn cần sang handoff. Ví dụ: bản nháp PR, helper tạo PR đã hoàn tất, kế hoạch/context trùng lặp, log debug và output thử nghiệm có thể tạo lại. Ưu tiên đặt artifact mới trong `.local-artifacts/<tên-tính-năng>/`; với artifact cũ ở `.local-artifacts/`, xét từng đường dẫn cụ thể.
