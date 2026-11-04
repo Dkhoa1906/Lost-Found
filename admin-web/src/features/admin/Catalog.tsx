@@ -19,7 +19,7 @@ const titles = {
   actions: "Lịch sử kiểm duyệt",
 };
 const placeholders = {
-  reports: "Nhập mã hoặc nội dung báo cáo…",
+  reports: "Nhập mã, tiêu đề hoặc định danh…",
   posts: "Nhập tiêu đề hoặc mô tả bài đăng…",
   users: "Nhập định danh công khai…",
   actions: "Nhập mã báo cáo hoặc ghi chú…",
@@ -238,8 +238,8 @@ export function Catalog({
           <div className="pagination">
             <p role="status">
               Hiển thị {result.data.items.length ? offset + 1 : 0}–
-              {offset + result.data.items.length} trên {result.data.total} kết
-              quả
+              {result.data.items.length ? offset + result.data.items.length : 0}{" "}
+              trên {result.data.total} kết quả
             </p>
             <Button
               variant="outline"
