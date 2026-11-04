@@ -9,19 +9,34 @@ này đã được kiểm tra cục bộ. Tin nhắn ảnh chỉ
 hiển thị loại tin nhắn, chưa mở tệp đính kèm. Với báo cáo hội thoại, khóa tài khoản
 thành viên thực hiện từ danh sách người dùng.
 
-Nâng cấp giao diện danh sách được kiểm tra cục bộ: xóa bộ lọc, hiển thị khoảng
+Nâng cấp giao diện danh sách đã được kiểm tra trên bản live: xóa bộ lọc, hiển thị khoảng
 kết quả, hàng dữ liệu dạng dọc trên điện thoại, bỏ qua điều hướng bằng bàn phím
 và khôi phục focus sau khi hủy kiểm duyệt. Các cải tiến này giữ nguyên hợp đồng
-API bên dưới; chưa xác nhận bản nâng cấp giao diện đã triển khai lên Render.
+API bên dưới. Frontend Render đang chạy commit `de44b1e`, chứa PR #20 và #21.
 
 **Triển khai admin-web (04/11/2026):** https://lost-found-admin.onrender.com,
-Render Static Site từ `develop`, commit `37a0405`. Backend cũng đã triển khai
-commit này và cho phép CORS từ domain admin-web. Kiểm tra trực tiếp đã đạt:
-`/health`, CORS preflight, đăng nhập admin, dashboard (`GET /admin/stats`),
-danh sách báo cáo/bài đăng/người dùng/nhật ký và đăng xuất. Dashboard ở 1440px
-và 390px không tràn ngang, không có lỗi JavaScript chưa xử lý. Chưa kiểm tra
-lại các thao tác kiểm duyệt ghi dữ liệu và tích hợp Android trên bản triển khai;
-các dấu 🧪 bên dưới không tự chuyển thành ✅ từ lần smoke test này.
+Render Static Site từ `develop`, commit `de44b1e`. Backend đang chạy `37a0405`;
+không có thay đổi trong `backend/` hoặc `supabase/` từ commit đó đến `de44b1e`.
+Kiểm tra trực tiếp đã đạt: `/health`, chặn request chưa đăng nhập (`401`), CORS
+preflight từ domain admin-web, đăng nhập admin, dashboard (`GET /admin/stats`),
+danh sách báo cáo/bài đăng/người dùng/nhật ký, chi tiết báo cáo và đăng xuất.
+Đã kiểm tra tìm kiếm không có kết quả, khoảng `0–0`, reset tìm kiếm/trạng thái,
+skip link, focus tiêu đề và trả focus khi hủy dialog kiểm duyệt. Dashboard và
+bốn catalog ở 375/768/1024/1440px không tràn ngang; không có lỗi console hoặc
+JavaScript chưa xử lý. Dữ liệu live chưa đủ mở trang hai; nút Tiếp bị khóa đúng
+ở trang cuối, còn chuyển trang được kiểm tra bằng UI mock cục bộ.
+
+Kiểm chứng cục bộ cùng đợt: 77 test backend trên PostgreSQL test cô lập và mypy
+đạt; 19 test Playwright với Auth/API được kiểm soát và build TypeScript/Vite đạt.
+Đã bổ sung kiểm tra HTTP luồng Found → xác minh → hai bên xác nhận, xác nhận
+lặp lại và giới hạn hai lượt Fail/hủy trên bài Lost không có câu hỏi. Đây là
+kiểm chứng hành vi hiện có, không thay đổi code nghiệp vụ. Một test tích hợp
+Playwright → FastAPI thật → PostgreSQL test cô lập kiểm tra gỡ/khôi phục bài,
+khóa/mở khóa tài khoản, nhận/xử lý báo cáo và nhật ký. Chỉ Supabase Auth và danh
+tính test được giả lập; không mock dữ liệu trả về của endpoint nghiệp vụ. Test
+dùng origin loopback riêng, không thay thế kiểm chứng CORS live. Chưa kiểm tra lại các
+thao tác kiểm duyệt ghi dữ liệu trên môi trường live tách biệt hoặc tích hợp
+Android; các dấu 🧪 bên dưới không tự chuyển thành ✅ từ lần kiểm tra này.
 
 > **Người viết:** A (Backend). **Người đọc:** B, C.
 > **Quy tắc:** chốt vào ngày 4. Muốn đổi API thì **báo cả nhóm trước khi sửa**, rồi cập nhật file này trong cùng Pull Request.
@@ -574,3 +589,10 @@ Cron gọi `public.expire_posts()` mỗi giờ: bài ACTIVE quá hạn chuyển 
 yêu cầu đang mở bị đóng, chat bị khóa và chủ bài nhận thông báo POST_EXPIRED.
 Cài bằng `supabase/install_cron.sql` sau migration; người dùng ứng dụng không
 được gọi trực tiếp hàm hết hạn.
+
+Đã kiểm tra cấu hình database live ngày 04/11/2026: job `expire-posts` đang bật,
+lịch `0 * * * *`, ba lượt gần nhất lúc 14:00, 15:00 và 16:00 UTC đều `succeeded`.
+Cả 16 bảng `public` bật RLS; `claims`, `messages`, `notifications` có trong
+publication `supabase_realtime`. Việc có publication chưa kiểm chứng tin nhắn
+được nhận realtime trên hai thiết bị Android. Lần kiểm tra này chỉ đọc metadata
+và lịch sử cron, không chạy seed/reset hoặc đổi dữ liệu/schema trên live.

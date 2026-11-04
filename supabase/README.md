@@ -21,6 +21,14 @@ The expiration function runs with invoker privileges; application roles cannot
 call it. It expires only due ACTIVE posts, closes open claims, locks their chats
 and notifies authors. Locked posts are skipped and revisited on the next run.
 
+Read-only live verification on 2026-11-04 confirmed `expire-posts` is active
+with schedule `0 * * * *` and command `select public.expire_posts()`. Its three
+latest runs (14:00, 15:00, 16:00 UTC) succeeded. All 16 public tables have RLS
+enabled, and `claims`, `messages`, `notifications` are in `supabase_realtime`.
+This confirms configuration and cron execution, not complete policy behavior
+or Realtime delivery on Android devices. No seed/reset or schema changes were
+performed during this check.
+
 For demo data, from the repository root:
 
 ```powershell
