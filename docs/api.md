@@ -12,11 +12,11 @@ thành viên thực hiện từ danh sách người dùng.
 Nâng cấp giao diện danh sách đã được kiểm tra trên bản live: xóa bộ lọc, hiển thị khoảng
 kết quả, hàng dữ liệu dạng dọc trên điện thoại, bỏ qua điều hướng bằng bàn phím
 và khôi phục focus sau khi hủy kiểm duyệt. Các cải tiến này giữ nguyên hợp đồng
-API bên dưới. Frontend Render đang chạy commit `c136d81`, chứa PR #20–#22.
+API bên dưới. Frontend Render đang chạy commit `93d300b`, chứa PR #20–#23.
 
 **Triển khai admin-web (05/11/2026):** https://lost-found-admin.onrender.com,
-Render Static Site từ `develop`, commit `c136d81`. Backend đang chạy `37a0405`;
-code backend và các SQL database không đổi từ commit đó đến `c136d81`
+Render Static Site từ `develop`, commit `93d300b`. Backend đang chạy `37a0405`;
+code backend và các SQL database không đổi từ commit đó đến `93d300b`
 (các cập nhật tài liệu không yêu cầu triển khai lại backend).
 Kiểm tra trực tiếp đã đạt: `/health`, chặn request chưa đăng nhập (`401`), CORS
 preflight từ domain admin-web, đăng nhập admin, dashboard (`GET /admin/stats`),
@@ -61,8 +61,9 @@ Trên web admin thật, Playwright đã kiểm tra gỡ/khôi phục đúng bài
 khóa đúng tài khoản QA và đăng xuất qua Auth/CORS thật, không mock response.
 Chỉ các URL ghi tới hai đối tượng QA đó được cho phép trong kịch bản. Các request
 ghi trả `200`, đồng bộ Auth thành công; không lỗi console/page và danh sách user
-375px không tràn ngang. Chưa kiểm tra Android/hai điện thoại, upload ảnh Storage,
-hoặc mọi nhánh xử lý báo cáo từ UI live.
+375px không tràn ngang. Upload ảnh Storage đã được kiểm chứng riêng ở mục 4.5.
+Chưa kiểm tra Android/hai điện thoại hoặc mọi nhánh xử lý báo cáo từ UI live;
+tích hợp B/C đang chờ và không chặn phần việc A độc lập.
 
 > **Người viết:** A (Backend). **Người đọc:** B, C.
 > **Quy tắc:** chốt vào ngày 4. Muốn đổi API thì **báo cả nhóm trước khi sửa**, rồi cập nhật file này trong cùng Pull Request.
@@ -210,8 +211,10 @@ Quy tắc thêm:
 
 Lỗi: `400` đường dẫn ảnh sai, ảnh của người khác, hoặc ảnh chưa được tải lên · `422` sai luật ở bảng trên (kể cả bài `FOUND` không có câu hỏi), hoặc `category_id` không tồn tại · `429` đăng quá 10 bài trong 24 giờ · `403` tài khoản bị khóa hoặc chưa có hồ sơ.
 
-#### `PATCH /posts/{post_id}/status` 🧪
+#### `PATCH /posts/{post_id}/status` ✅
 Chủ bài ẩn, hiện lại hoặc xóa bài của mình.
+Đã kiểm tra live chuyển `ACTIVE` → `ARCHIVED` trên bài QA có ảnh; nhánh hiện lại
+và xóa vẫn dựa trên kiểm chứng cục bộ, chưa chạy trong đợt Storage QA.
 ```json
 { "status": "ARCHIVED" }
 ```
@@ -536,13 +539,33 @@ Bảng `verification_questions` chỉ **chủ bài** đọc trực tiếp đư�
 | Sửa hồ sơ | Cập nhật `profiles`: chỉ các cột `display_name`, `avatar_url`, `bio` (tối đa 160 ký tự) |
 
 ### 4.5 Upload ảnh
-Bucket `post-images`. Đường dẫn bắt buộc: **`<user_id>/<uuid>.jpg`**. Thư mục đầu phải là ID của chính bạn, nếu không bị từ chối.
+Bucket `post-images`. Thư mục đầu **bắt buộc là ID của chính bạn**, nếu không bị
+từ chối. Đặt tên ảnh bằng UUID mới, ví dụ **`<user_id>/<uuid>.jpg`**; API cũng
+chấp nhận các đuôi `jpeg`, `png`, `webp` như quy định ở mục 3.3.
 Khuyến nghị: nén ảnh, cạnh dài khoảng 1280 px, JPEG chất lượng khoảng 80%.
 
 Địa chỉ hiển thị ảnh:
 ```
 <SUPABASE_URL>/storage/v1/object/public/post-images/<đường dẫn>
 ```
+
+**Storage QA live (05/11/2026):** dùng lại hai tài khoản QA, upload một PNG mới
+vào đúng thư mục chủ sở hữu, rồi tạo một bài Found có ảnh qua FastAPI. Đọc lại
+`post_images` và chi tiết báo cáo xác nhận đúng đường dẫn/thứ tự ảnh. URL public
+trả `200`, MIME `image/png`, SHA-256 khớp bytes upload. Ảnh giải mã đúng 320×180
+và hiển thị trên web admin thật tại 375/768/1024/1440px, không tràn ngang hoặc
+lỗi console/page. Báo cáo QA được xử lý `KEEP` qua UI; bài được ẩn `ARCHIVED`,
+ảnh vẫn được giữ để truy vết.
+
+Các kiểm tra từ chối đã đạt: upload vào thư mục người khác, không có thư mục
+chủ sở hữu, không đăng nhập và ghi đè ảnh của người khác đều lỗi RLS `403`.
+Client không liệt kê được ảnh trong thư mục đã biết có ảnh; URL public vẫn
+đọc được theo thiết kế bucket công khai. FastAPI trả `400` với ảnh của người
+khác, ảnh chưa upload hoặc đường dẫn trùng; quá 5 ảnh trả `422`. Những request
+bị từ chối không tạo bài đăng dở dang. Không chạy seed/reset, không xóa object
+hoặc thay đổi dữ liệu cũ. Chưa kiểm tra Photo Picker/nén ảnh trên Android hoặc
+thao tác xóa Storage; không suy ra giới hạn MIME/dung lượng bucket từ các kiểm
+tra này (cấu hình bucket hiện không đặt hai giới hạn đó).
 
 ### 4.6 Realtime
 Đăng ký lắng nghe sự kiện thêm dòng (INSERT):

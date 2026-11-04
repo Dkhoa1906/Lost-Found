@@ -29,6 +29,16 @@ This confirms configuration and cron execution, not complete policy behavior
 or Realtime delivery on Android devices. No seed/reset or schema changes were
 performed during this check.
 
+Storage QA on 2026-11-05 used the existing dedicated QA users and one new PNG.
+Upload into the owner's folder and public download passed; downloaded SHA-256
+matched the uploaded bytes. Wrong-folder/root/anonymous uploads and another
+user's overwrite attempt were denied with RLS `403`. Listing a known nonempty
+folder returned no objects, consistent with the intentionally absent SELECT
+policy. The image was attached to one new QA post and rendered by the live
+admin UI; the post is archived and the image is retained. No object deletion,
+seed/reset or policy changes were performed. Bucket MIME/size limits remain
+unset; Android compression and Storage delete operations were not tested.
+
 For demo data, from the repository root:
 
 ```powershell

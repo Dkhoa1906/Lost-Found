@@ -15,7 +15,7 @@ On phones, table rows reflow into labeled records with visible action buttons;
 touch controls are at least 44px high. Keyboard users can skip navigation and
 focus moves to the destination heading. Canceling a moderation dialog restores
 focus to its trigger. These interface changes are verified on the live release,
-now at `c136d81` (2026-11-05). The backend remains at `37a0405`; application code
+now at `93d300b` (2026-11-05). The backend remains at `37a0405`; application code
 and SQL scripts are unchanged between these commits.
 
 ```powershell
@@ -71,8 +71,16 @@ rejected password login, and unban restored it.
 Live browser checks also passed post remove/restore, account ban/unban and logout
 with real Auth/CORS, no mocked responses and no console/page errors. The runner
 allowed business writes only to the retained QA post/account URLs. The 375px
-user list had no horizontal overflow. This does not verify every report action
-in the live browser, Android integration or Storage uploads; see
+user list had no horizontal overflow.
+
+Storage QA on 2026-11-05 added one PNG and one photo post using the existing QA
+accounts. The uploaded bytes matched the public download; the real admin report
+displayed the image at 375/768/1024/1440px without overflow or console/page errors.
+The report was resolved with KEEP in the live UI; the QA post was archived and
+its image retained. Storage rejected unauthorized uploads/overwrites, and the
+API rejected foreign, missing, duplicate and excess image references. This does
+not verify every report action, Android Photo Picker/compression or Storage
+deletion. B/C integration is deferred while independent A work continues; see
 [API verification status](../docs/api.md).
 
 The UI uses Tailwind v4, shadcn/ui Base primitives and TanStack Query. Feature
