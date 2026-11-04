@@ -55,6 +55,11 @@ covered the disabled last-page boundary; next/previous navigation passed in
 the local UI tests. No business mutation was submitted during the live smoke.
 
 Local regression: 19 Playwright tests and the TypeScript/Vite build passed.
+An additional isolated integration test drives the rendered UI against real
+FastAPI/PostgreSQL for post remove/restore, account ban/unban, report review/
+resolution and audit history. External Auth is controlled; business endpoint
+responses are real. This test uses a separate loopback CORS wrapper and dummy
+identities, so it does not establish deployed Auth/CORS mutation behavior.
 Browser plugin was unavailable; validation used local Playwright Chromium.
 These results do not verify moderation mutations or Android integration on the
 deployed system; see [API verification status](../docs/api.md).

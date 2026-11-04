@@ -26,11 +26,15 @@ bốn catalog ở 375/768/1024/1440px không tràn ngang; không có lỗi conso
 JavaScript chưa xử lý. Dữ liệu live chưa đủ mở trang hai; nút Tiếp bị khóa đúng
 ở trang cuối, còn chuyển trang được kiểm tra bằng UI mock cục bộ.
 
-Kiểm chứng cục bộ cùng đợt: 76 test backend trên PostgreSQL test cô lập và mypy
+Kiểm chứng cục bộ cùng đợt: 77 test backend trên PostgreSQL test cô lập và mypy
 đạt; 19 test Playwright với Auth/API được kiểm soát và build TypeScript/Vite đạt.
 Đã bổ sung kiểm tra HTTP luồng Found → xác minh → hai bên xác nhận, xác nhận
 lặp lại và giới hạn hai lượt Fail/hủy trên bài Lost không có câu hỏi. Đây là
-kiểm chứng hành vi hiện có, không thay đổi code nghiệp vụ. Chưa kiểm tra lại các
+kiểm chứng hành vi hiện có, không thay đổi code nghiệp vụ. Một test tích hợp
+Playwright → FastAPI thật → PostgreSQL test cô lập kiểm tra gỡ/khôi phục bài,
+khóa/mở khóa tài khoản, nhận/xử lý báo cáo và nhật ký. Chỉ Supabase Auth và danh
+tính test được giả lập; không mock dữ liệu trả về của endpoint nghiệp vụ. Test
+dùng origin loopback riêng, không thay thế kiểm chứng CORS live. Chưa kiểm tra lại các
 thao tác kiểm duyệt ghi dữ liệu trên môi trường live tách biệt hoặc tích hợp
 Android; các dấu 🧪 bên dưới không tự chuyển thành ✅ từ lần kiểm tra này.
 
