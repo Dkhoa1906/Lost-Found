@@ -14,8 +14,9 @@ Catalogs share a search/filter toolbar with a reset action and a result range.
 On phones, table rows reflow into labeled records with visible action buttons;
 touch controls are at least 44px high. Keyboard users can skip navigation and
 focus moves to the destination heading. Canceling a moderation dialog restores
-focus to its trigger. These interface changes are verified locally; their
-presence on a feature branch does not establish deployment status.
+focus to its trigger. These interface changes are verified on the live frontend
+at commit `de44b1e` (2026-11-04). The backend remains at `37a0405`; its code and
+database files are unchanged between these commits.
 
 ```powershell
 cd admin-web
@@ -44,10 +45,19 @@ in Render; use the deployed backend URL for `VITE_API_BASE_URL`. The backend's
 `ALLOWED_ORIGINS` must include `https://lost-found-admin.onrender.com`.
 Vite variable changes require a new build; backend CORS changes require deployment.
 
-Live smoke checks on 2026-11-04 passed: admin login, dashboard statistics,
-reports/posts/users/audit lists and logout, with no uncaught page errors.
-Dashboard checked at 1440px and 390px without horizontal overflow. This does
-not verify moderation mutations or Android integration on the deployed system.
+Live smoke checks on 2026-11-04 passed: health, unauthorized access rejection,
+CORS, admin login, dashboard, reports/posts/users/audit lists, report detail and
+logout. Search/empty results, search/status reset, keyboard navigation, skip
+link and focus restoration after canceling moderation also passed. Dashboard
+and all four catalogs fit 375/768/1024/1440px without horizontal overflow or
+console/page errors. Live rows did not fill a second page, so pagination checks
+covered the disabled last-page boundary; next/previous navigation passed in
+the local UI tests. No business mutation was submitted during the live smoke.
+
+Local regression: 19 Playwright tests and the TypeScript/Vite build passed.
+Browser plugin was unavailable; validation used local Playwright Chromium.
+These results do not verify moderation mutations or Android integration on the
+deployed system; see [API verification status](../docs/api.md).
 
 The UI uses Tailwind v4, shadcn/ui Base primitives and TanStack Query. Feature
 modules own Auth and read screens; `lib/api.ts` obtains the current access token
