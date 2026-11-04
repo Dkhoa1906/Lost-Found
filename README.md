@@ -168,7 +168,7 @@ flowchart LR
 | Giao diện | Tailwind CSS + shadcn/ui |
 | Gọi dữ liệu | TanStack Query; bảng dùng shadcn/ui |
 | Đăng nhập | `supabase-js` |
-| Triển khai | Vercel / Netlify / Cloudflare Pages |
+| Triển khai | Render Static Site, nhánh `develop` |
 
 ---
 
@@ -426,6 +426,10 @@ npm run build
 ```
 
 Kết quả nằm trong `admin-web/dist/`. Trước khi build cho môi trường triển khai, đặt `VITE_API_BASE_URL` thành URL backend và thêm domain admin-web vào `ALLOWED_ORIGINS` của backend. Các biến `VITE_*` được đóng gói khi build.
+
+Admin-web đang chạy tại **https://lost-found-admin.onrender.com**. Đây là URL giao diện quản trị; URL `https://lost-found-api-ph8v.onrender.com` phục vụ API, `/health` và `/docs`.
+
+Render Static Site lấy mã từ `develop`, chạy `cd admin-web && npm ci && npm run build` tại gốc repository và phục vụ `admin-web/dist`. Cấu hình trên Render gồm `SKIP_INSTALL_DEPS=true`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` và `VITE_API_BASE_URL=https://lost-found-api-ph8v.onrender.com`. Backend cho phép origin `https://lost-found-admin.onrender.com` qua `ALLOWED_ORIGINS`. Không đưa secret key vào biến frontend.
 
 Các lần chạy tiếp theo chỉ cần mở hai terminal và chạy lệnh khởi động tương ứng. Xem thêm [backend](backend/README.md), [admin-web](admin-web/README.md) và [hợp đồng API](docs/api.md).
 
