@@ -55,8 +55,14 @@ cập nhật ✅; dấu này không có nghĩa mọi biến thể đều đã ki
 Hai tài khoản QA và dữ liệu được giữ để truy vết: một bài `RESOLVED`, một bài
 `REMOVED`; tài khoản QA đã mở khóa. Không sửa tài khoản/bài có sẵn, không chạy
 seed/reset hoặc đổi schema. Đây là dữ liệu tách biệt trên project hiện tại,
-không phải một môi trường staging riêng. Chưa kiểm tra Android/hai điện thoại,
-upload ảnh Storage hoặc thao tác ghi từ UI trình duyệt với Auth/CORS thật.
+không phải một môi trường staging riêng.
+
+Trên web admin thật, Playwright đã kiểm tra gỡ/khôi phục đúng bài QA, khóa/mở
+khóa đúng tài khoản QA và đăng xuất qua Auth/CORS thật, không mock response.
+Chỉ các URL ghi tới hai đối tượng QA đó được cho phép trong kịch bản. Các request
+ghi trả `200`, đồng bộ Auth thành công; không lỗi console/page và danh sách user
+375px không tràn ngang. Chưa kiểm tra Android/hai điện thoại, upload ảnh Storage,
+hoặc mọi nhánh xử lý báo cáo từ UI live.
 
 > **Người viết:** A (Backend). **Người đọc:** B, C.
 > **Quy tắc:** chốt vào ngày 4. Muốn đổi API thì **báo cả nhóm trước khi sửa**, rồi cập nhật file này trong cùng Pull Request.
@@ -426,7 +432,7 @@ Ghi chú:
 |---|---|---|---|
 | `POST /admin/reports/{id}/review` | không | Đánh dấu báo cáo **đang xem xét** (`REVIEWING`). Log `REVIEW_REPORT` | ✅ |
 | `POST /admin/reports/{id}/resolve` | `{"action": "...", "note": "..."}` | Xử lý báo cáo. `action`: `REMOVE_POST` (gỡ bài), `BAN_USER` (khóa tài khoản người bị báo cáo), `KEEP` (đã xử lý, giữ nguyên), `DISMISS` (không vi phạm, trạng thái `DISMISSED`). **`note` bắt buộc**. Người báo cáo nhận thông báo `REPORT_UPDATED` | ✅ |
-| `POST /admin/posts/{id}/remove` | `{"reason": "..."}` | Gỡ bài (`REMOVED`), đóng các yêu cầu đang mở, **thông báo cho chủ bài kèm lý do** (`POST_REMOVED`) | 🧪 |
+| `POST /admin/posts/{id}/remove` | `{"reason": "..."}` | Gỡ bài (`REMOVED`), đóng các yêu cầu đang mở, **thông báo cho chủ bài kèm lý do** (`POST_REMOVED`) | ✅ |
 | `POST /admin/posts/{id}/restore` | không | Khôi phục bài đã gỡ | ✅ |
 | `POST /admin/users/{id}/ban` | `{"reason": "..."}` | Khóa tài khoản: đặt `is_banned`, chặn đăng nhập, gỡ các bài đang hoạt động của họ | ✅ |
 | `POST /admin/users/{id}/unban` | `{"reason": "..."}` | Mở khóa | ✅ |

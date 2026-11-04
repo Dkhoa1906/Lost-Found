@@ -68,8 +68,12 @@ accounts/posts were untouched; QA data is retained on the current project rather
 than a separate staging environment. API ban rejected an existing JWT; Auth ban
 rejected password login, and unban restored it.
 
-This does not verify live browser mutation flows with real Auth/CORS, Android
-integration or Storage uploads; see [API verification status](../docs/api.md).
+Live browser checks also passed post remove/restore, account ban/unban and logout
+with real Auth/CORS, no mocked responses and no console/page errors. The runner
+allowed business writes only to the retained QA post/account URLs. The 375px
+user list had no horizontal overflow. This does not verify every report action
+in the live browser, Android integration or Storage uploads; see
+[API verification status](../docs/api.md).
 
 The UI uses Tailwind v4, shadcn/ui Base primitives and TanStack Query. Feature
 modules own Auth and read screens; `lib/api.ts` obtains the current access token
