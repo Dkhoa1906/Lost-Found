@@ -95,8 +95,7 @@ Desktop.ini
 # Local working notes and visual QA artifacts; never publish with source.
 .local-artifacts/
 
-# Repository policy: agent instructions and verification tools stay local.
-/AGENTS.md
+# Shared AI instructions are versioned; skills and local verification stay local.
 /.agents/
 /GLOSSARY.md
 /backend/tests/

@@ -9,6 +9,11 @@ này được kiểm tra cục bộ; chưa xác nhận bản web đã triển kh
 hiển thị loại tin nhắn, chưa mở tệp đính kèm. Với báo cáo hội thoại, khóa tài khoản
 thành viên thực hiện từ danh sách người dùng.
 
+Nâng cấp giao diện danh sách được kiểm tra cục bộ: xóa bộ lọc, hiển thị khoảng
+kết quả, hàng dữ liệu dạng dọc trên điện thoại, bỏ qua điều hướng bằng bàn phím
+và khôi phục focus sau khi hủy kiểm duyệt. Các cải tiến này giữ nguyên hợp đồng
+API bên dưới; chưa xác nhận bản nâng cấp giao diện đã triển khai lên Render.
+
 > **Người viết:** A (Backend). **Người đọc:** B, C.
 > **Quy tắc:** chốt vào ngày 4. Muốn đổi API thì **báo cả nhóm trước khi sửa**, rồi cập nhật file này trong cùng Pull Request.
 

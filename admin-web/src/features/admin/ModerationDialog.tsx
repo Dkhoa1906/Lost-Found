@@ -33,7 +33,13 @@ export function ModerationDialog({
     },
   });
   useEffect(() => {
-    dialog.current?.showModal();
+    const element = dialog.current;
+    const opener = document.activeElement;
+    element?.showModal();
+    return () => {
+      element?.close();
+      if (opener instanceof HTMLElement && opener.isConnected) opener.focus();
+    };
   }, []);
   function submit(event: FormEvent) {
     event.preventDefault();

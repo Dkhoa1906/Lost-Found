@@ -7,6 +7,13 @@ bans. Post and user lists support independent moderation with required reasons.
 Only directly reported conversations expose message inspection and locking;
 image messages are identified as images without displaying attachments.
 
+Catalogs share a search/filter toolbar with a reset action and a result range.
+On phones, table rows reflow into labeled records with visible action buttons;
+touch controls are at least 44px high. Keyboard users can skip navigation and
+focus moves to the destination heading. Canceling a moderation dialog restores
+focus to its trigger. These interface changes are verified locally; their
+presence on a feature branch does not establish deployment status.
+
 ```powershell
 cd admin-web
 npm ci

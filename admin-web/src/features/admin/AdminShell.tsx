@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   House,
@@ -31,6 +31,7 @@ const descriptions: Record<Tab, string> = {
 };
 
 export function AdminShell({ logout }: { logout: () => Promise<void> }) {
+  const heading = useRef<HTMLHeadingElement>(null);
   const [tab, setTab] = useState<Tab>("stats");
   const [reportId, setReportId] = useState<string>();
   // The cache belongs to this authenticated shell and is discarded on logout.
@@ -41,9 +42,15 @@ export function AdminShell({ logout }: { logout: () => Promise<void> }) {
       }),
   );
   const active = links.find((l) => l.tab === tab)!;
+  useEffect(() => {
+    heading.current?.focus();
+  }, [tab]);
   return (
     <QueryClientProvider client={queryClient}>
       <div className="admin-layout">
+        <a className="skip-link" href="#main-content">
+          Đến nội dung chính
+        </a>
         <aside className="sidebar">
           <div className="sidebar-brand">
             Lost &amp; Found<span>Quản trị hệ thống</span>
@@ -69,10 +76,12 @@ export function AdminShell({ logout }: { logout: () => Promise<void> }) {
             Đăng xuất
           </button>
         </aside>
-        <main className="workspace">
+        <main id="main-content" className="workspace" tabIndex={-1}>
           <header className="page-header">
             <div>
-              <h1>{active.label}</h1>
+              <h1 ref={heading} tabIndex={-1}>
+                {active.label}
+              </h1>
               <p>{descriptions[tab]}</p>
             </div>
             <p className="page-date">

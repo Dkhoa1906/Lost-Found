@@ -78,11 +78,7 @@ export function DataTable({
           {columns.map((c) => (
             <TableHead key={c.key}>{c.label}</TableHead>
           ))}
-          {action && (
-            <TableHead>
-              <span className="sr-only">Thao tác</span>
-            </TableHead>
-          )}
+          {action && <TableHead>Thao tác</TableHead>}
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -91,7 +87,7 @@ export function DataTable({
             {columns.map((c) => {
               const value = row[c.key];
               return (
-                <TableCell key={c.key}>
+                <TableCell key={c.key} data-label={c.label}>
                   {c.key === "status" ? (
                     <Badge variant="secondary" data-status={String(value)}>
                       {value === "RESOLVED" && row.type
@@ -118,7 +114,7 @@ export function DataTable({
               );
             })}
             {action && (
-              <TableCell>
+              <TableCell data-label="Thao tác">
                 {(() => {
                   const item = action(row);
                   return item ? (
