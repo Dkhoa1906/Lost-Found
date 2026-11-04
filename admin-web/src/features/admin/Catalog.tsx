@@ -10,6 +10,20 @@ import { DataTable, type Column } from "./DataTable";
 import type { PageData, Tab } from "./types";
 import { ReportDetail } from "./ReportDetail";
 import { ModerationDialog, type ModerationAction } from "./ModerationDialog";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+
+const titles = {
+  reports: "Danh sách báo cáo",
+  posts: "Danh sách bài đăng",
+  users: "Danh sách người dùng",
+  actions: "Lịch sử kiểm duyệt",
+};
+const placeholders = {
+  reports: "Nhập mã, tiêu đề hoặc định danh…",
+  posts: "Nhập tiêu đề hoặc mô tả bài đăng…",
+  users: "Nhập định danh công khai…",
+  actions: "Nhập mã báo cáo hoặc ghi chú…",
+};
 
 const filters: Record<Exclude<Tab, "stats">, [string, string][]> = {
   reports: [
@@ -106,7 +120,7 @@ export function Catalog({
       />
     );
   return (
-    <section className="flex flex-col gap-6">
+    <section className="catalog-surface" aria-label={titles[tab]}>
       <form onSubmit={search} className="search-form">
         <FieldGroup>
           <Field>
@@ -116,7 +130,7 @@ export function Catalog({
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               maxLength={100}
-              placeholder="Nhập từ khóa…"
+              placeholder={placeholders[tab]}
             />
           </Field>
         </FieldGroup>
@@ -143,7 +157,26 @@ export function Catalog({
         <Button type="submit" variant="outline">
           Tìm kiếm
         </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          disabled={!draft && !query && !status && offset === 0}
+          onClick={() => {
+            setDraft("");
+            setQuery("");
+            setStatus("");
+            setOffset(0);
+          }}
+        >
+          Xóa bộ lọc
+        </Button>
       </form>
+      <div className="catalog-heading">
+        <h2>{titles[tab]}</h2>
+        {result.isSuccess && (
+          <p className="muted">{result.data.total} kết quả</p>
+        )}
+      </div>
       {result.isPending ? (
         <Skeleton className="h-40 w-full" />
       ) : result.isError ? (
@@ -203,12 +236,17 @@ export function Catalog({
             }
           />
           <div className="pagination">
-            <p>{result.data.total} kết quả</p>
+            <p role="status">
+              Hiển thị {result.data.items.length ? offset + 1 : 0}–
+              {result.data.items.length ? offset + result.data.items.length : 0}{" "}
+              trên {result.data.total} kết quả
+            </p>
             <Button
               variant="outline"
               disabled={offset === 0}
               onClick={() => setOffset(Math.max(0, offset - 20))}
             >
+              <ChevronLeft aria-hidden="true" data-icon="inline-start" />
               Trước
             </Button>
             <Button
@@ -217,6 +255,7 @@ export function Catalog({
               onClick={() => setOffset(offset + 20)}
             >
               Tiếp
+              <ChevronRight aria-hidden="true" data-icon="inline-end" />
             </Button>
           </div>
         </>

@@ -144,6 +144,12 @@
   --sidebar: #103c39;
   --sidebar-foreground: #eff8f5;
   --sidebar-accent: #21695e;
+  --sidebar-selection: #c3e7dd;
+  --sidebar-selection-text: #123e3a;
+  --sidebar-hover: #1e514b;
+  --surface-hover: #f4f8f6;
+  --status-neutral-bg: #edf0f2;
+  --status-neutral-text: #4c5863;
   --secondary: #eaf2ef;
   --secondary-foreground: #225c4c;
   --series-found: #6089a0;
@@ -182,6 +188,20 @@ button:disabled {
 .muted {
   color: var(--muted-foreground);
 }
+.skip-link {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 50;
+  padding: 12px 18px;
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--foreground);
+  transform: translateY(-160%);
+}
+.skip-link:focus {
+  transform: translateY(0);
+}
 .login-screen {
   min-height: 100dvh;
   display: grid;
@@ -213,7 +233,7 @@ button:disabled {
 .admin-layout {
   min-height: 100dvh;
   display: grid;
-  grid-template-columns: 220px minmax(0, 1fr);
+  grid-template-columns: 250px minmax(0, 1fr);
 }
 .sidebar {
   background: var(--sidebar);
@@ -252,8 +272,8 @@ button:disabled {
   gap: 12px;
   padding: 12px 14px;
   border: 0;
-  border-radius: 6px;
-  font-size: 14px;
+  border-radius: 8px;
+  font-size: 15px;
   font-weight: 500;
   text-align: left;
   background: transparent;
@@ -268,15 +288,15 @@ button:disabled {
   flex-shrink: 0;
 }
 .nav-link:hover {
-  background: #1e514b;
+  background: var(--sidebar-hover);
 }
 .nav-link:focus-visible {
   outline-color: white;
 }
 .nav-active,
 .nav-active:hover {
-  background: var(--sidebar-accent);
-  color: white;
+  background: var(--sidebar-selection);
+  color: var(--sidebar-selection-text);
 }
 .logout {
   margin-top: auto;
@@ -299,7 +319,7 @@ button:disabled {
   margin-bottom: 26px;
 }
 .workspace h1 {
-  font-size: 30px;
+  font-size: 36px;
   font-weight: 720;
   letter-spacing: -0.8px;
   line-height: 1.25;
@@ -312,11 +332,8 @@ button:disabled {
   display: flex;
   gap: 9px;
   align-items: center;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 8px 12px;
-  background: var(--card);
-  font-size: 12px;
+  padding-block: 8px;
+  font-size: 13px;
   margin-top: 0;
   white-space: nowrap;
 }
@@ -551,11 +568,13 @@ button:disabled {
   gap: 12px;
   align-items: end;
   flex-wrap: wrap;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
 }
 .search-form [data-slot="field-group"] {
   flex: 1;
   min-width: 180px;
-  max-width: 360px;
+  max-width: 480px;
 }
 .filter-field {
   display: flex;
@@ -574,7 +593,7 @@ textarea {
   padding: 6px 10px;
 }
 select {
-  min-height: 32px;
+  min-height: 44px;
 }
 textarea {
   resize: vertical;
@@ -588,6 +607,9 @@ textarea {
   gap: 10px;
   font-size: 13px;
   color: var(--muted-foreground);
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
 }
 .pagination > p {
   margin-right: auto;
@@ -600,21 +622,21 @@ textarea {
 [data-slot="table-head"] {
   background: var(--muted);
   color: var(--muted-foreground);
-  height: 42px;
+  height: 48px;
   font-weight: 550;
   padding: 10px 14px;
-  font-size: 12px;
+  font-size: 13px;
 }
 [data-slot="table-cell"] {
-  padding: 13px 14px;
-  font-size: 13px;
+  padding: 16px 14px;
+  font-size: 15px;
   vertical-align: middle;
   max-width: 360px;
   white-space: normal;
   overflow-wrap: anywhere;
 }
 [data-slot="table-row"]:hover {
-  background: #f6f9f8;
+  background: var(--surface-hover);
 }
 [data-slot="table-cell"]:first-child {
   font-weight: 550;
@@ -622,6 +644,7 @@ textarea {
 [data-slot="badge"] {
   white-space: nowrap;
   font-weight: 500;
+  font-size: 12px;
 }
 [data-status="PENDING"] {
   background: var(--status-pending-bg);
@@ -630,6 +653,12 @@ textarea {
 [data-status="REVIEWING"] {
   background: var(--status-review-bg);
   color: var(--status-review-text);
+}
+[data-status="DISMISSED"],
+[data-status="ARCHIVED"],
+[data-status="EXPIRED"] {
+  background: var(--status-neutral-bg);
+  color: var(--status-neutral-text);
 }
 [data-status="RESOLVED"],
 [data-status="ACTIVE"] {
@@ -747,6 +776,37 @@ textarea {
 .moderation-dialog p {
   margin-bottom: 18px;
   overflow-wrap: anywhere;
+}
+.catalog-surface {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  min-width: 0;
+}
+.catalog-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.catalog-heading h2 {
+  font-size: 21px;
+}
+.catalog-surface [data-slot="table-container"] {
+  border: 0;
+}
+[data-slot="button"],
+[data-slot="input"] {
+  min-height: 44px;
+}
+.nav-link,
+[data-slot="button"] {
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
 }
 @media (max-width: 1180px) {
   .workspace {
@@ -912,6 +972,67 @@ textarea {
   }
   [data-slot="table"] {
     min-width: 580px;
+  }
+  .catalog-surface {
+    padding: 16px;
+    gap: 16px;
+  }
+  .catalog-surface .search-form [data-slot="field-group"] {
+    min-width: 100%;
+    max-width: none;
+  }
+  .catalog-surface .filter-field {
+    min-width: 100%;
+  }
+  .catalog-surface [data-slot="table"] {
+    min-width: 0;
+    display: block;
+  }
+  .catalog-surface [data-slot="table-header"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .catalog-surface [data-slot="table-body"] {
+    display: grid;
+    gap: 16px;
+  }
+  .catalog-surface [data-slot="table-row"] {
+    display: grid;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 4px 12px;
+  }
+  .catalog-surface [data-slot="table-cell"] {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 10px 0;
+    max-width: none;
+    text-align: right;
+    border-bottom: 1px solid var(--border);
+  }
+  .catalog-surface [data-slot="table-cell"]::before {
+    content: attr(data-label);
+    color: var(--muted-foreground);
+    font-size: 12px;
+    font-weight: 400;
+    text-align: left;
+    flex-shrink: 0;
+  }
+  .catalog-surface [data-slot="table-cell"]:last-child {
+    border-bottom: 0;
+  }
+  .catalog-surface .pagination > p {
+    width: 100%;
+  }
+  [data-slot="input"],
+  select,
+  textarea {
+    font-size: 16px;
   }
   .pagination {
     gap: 8px;

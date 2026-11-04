@@ -9,6 +9,11 @@ này đã được kiểm tra cục bộ. Tin nhắn ảnh chỉ
 hiển thị loại tin nhắn, chưa mở tệp đính kèm. Với báo cáo hội thoại, khóa tài khoản
 thành viên thực hiện từ danh sách người dùng.
 
+Nâng cấp giao diện danh sách được kiểm tra cục bộ: xóa bộ lọc, hiển thị khoảng
+kết quả, hàng dữ liệu dạng dọc trên điện thoại, bỏ qua điều hướng bằng bàn phím
+và khôi phục focus sau khi hủy kiểm duyệt. Các cải tiến này giữ nguyên hợp đồng
+API bên dưới; chưa xác nhận bản nâng cấp giao diện đã triển khai lên Render.
+
 **Triển khai admin-web (04/11/2026):** https://lost-found-admin.onrender.com,
 Render Static Site từ `develop`, commit `37a0405`. Backend cũng đã triển khai
 commit này và cho phép CORS từ domain admin-web. Kiểm tra trực tiếp đã đạt:

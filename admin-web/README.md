@@ -10,6 +10,13 @@ image messages are identified as images without displaying attachments.
 Deployed admin: **https://lost-found-admin.onrender.com**. The FastAPI backend
 has a separate URL: `https://lost-found-api-ph8v.onrender.com`.
 
+Catalogs share a search/filter toolbar with a reset action and a result range.
+On phones, table rows reflow into labeled records with visible action buttons;
+touch controls are at least 44px high. Keyboard users can skip navigation and
+focus moves to the destination heading. Canceling a moderation dialog restores
+focus to its trigger. These interface changes are verified locally; their
+presence on a feature branch does not establish deployment status.
+
 ```powershell
 cd admin-web
 npm ci
