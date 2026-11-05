@@ -7,6 +7,12 @@ bans. Post and user lists support independent moderation with required reasons.
 Only directly reported conversations expose message inspection and locking;
 image messages are identified as images without displaying attachments.
 
+The user now owns C's web scope; Android ownership is separate. Web design uses
+`ui-ux-pro-max` when available and follows the functions in the
+[team Figma](https://www.figma.com/design/oq27gMLy9XfXWTeerrGQqy/LTTBDD-L-F?node-id=0-1),
+with the current API contract taking precedence for permissions and business rules.
+Keep the existing teal/Geist tokens and shared shadcn/ui components.
+
 Deployed admin: **https://lost-found-admin.onrender.com**. The FastAPI backend
 has a separate URL: `https://lost-found-api-ph8v.onrender.com`.
 
@@ -87,3 +93,20 @@ The UI uses Tailwind v4, shadcn/ui Base primitives and TanStack Query. Feature
 modules own Auth and read screens; `lib/api.ts` obtains the current access token
 for each request. The authenticated shell owns its query cache and discards it
 on logout. Expired or rejected server authorization signs the user out.
+
+Reported-chat QA on 2026-11-05 passed with the existing QA accounts and one new
+labeled open conversation. Unreported, post-only and user-only reports did not
+grant chat access (403); direct Supabase message reads by admin remained empty.
+After a conversation report, cursor pagination returned exactly the retained
+history and every successful API read wrote a VIEW_CONVERSATION audit entry
+(five HTTP pages and two reads initiated by the browser).
+
+The real admin UI opened the QA report/messages, canceled locking with restored
+focus, then locked the conversation with a reason. Both participants' valid
+sends were rejected with RLS42501 while their readable history stayed intact;
+the lock state and one LOCK_CONVERSATION audit entry were verified. Repeated
+locking returned409. The detail view fit 375/768/1024/1440px with no console/page
+errors. The browser allowed writes only to the new QA conversation/report URLs,
+resolved the report KEEP and logged out. Only this run's three QA reports were
+resolved; its new post was archived and all history retained. This verifies
+existing live behavior, not Android or full visual/functional Figma parity.

@@ -65,6 +65,26 @@ ghi trả `200`, đồng bộ Auth thành công; không lỗi console/page và d
 Chưa kiểm tra Android/hai điện thoại hoặc mọi nhánh xử lý báo cáo từ UI live;
 tích hợp B/C đang chờ và không chặn phần việc A độc lập.
 
+**QA hội thoại bị báo cáo (05/11/2026):** dùng lại hai tài khoản QA, tạo một bài
+Found, claim/PASS và hội thoại mới còn mở. Cả hai gửi tin thành công trước khóa.
+Admin đọc qua API bị `403` khi chưa có báo cáo trực tiếp, kể cả sau báo cáo về
+bài hoặc tài khoản liên quan; đọc thẳng tin nhắn bằng Supabase vẫn bị RLS ẩn.
+Sau báo cáo `CONVERSATION`, API trả đúng nội dung/thứ tự mới nhất trước qua
+`limit=2`/`before_id`, không trùng hoặc thiếu tin, kể cả trang rỗng cuối cùng.
+Năm lượt đọc HTTP và hai lượt đọc từ UI đều có `VIEW_CONVERSATION` riêng;
+phân trang sai bị `422` và không tạo log xem thành công.
+
+Trên web thật với Auth/CORS thật, đã mở đúng báo cáo QA, xem tin, hủy khóa và
+kiểm tra focus trở về nút mở, rồi khóa qua dialog với lý do. Trạng thái khóa
+được đọc lại từ cả hai participant; cả hai gửi payload hợp lệ bị RLS `42501`,
+lịch sử vẫn đọc được và không có tin mới. Có đúng một `LOCK_CONVERSATION`
+với lý do đã nhập; khóa lặp trả `409`. Report detail ở 375/768/1024/1440px
+không tràn ngang, không lỗi console/page; đã đăng xuất. UI chỉ được phép ghi
+tới đúng hội thoại và báo cáo QA mới, không mock response nghiệp vụ.
+Ba báo cáo của lần QA được xử lý `KEEP`, bài mới được ẩn, dữ liệu/audit giữ lại.
+Không sửa schema, seed/reset hoặc dữ liệu ngoài phạm vi QA. Kiểm chứng này
+không xác nhận Android hay độ khớp toàn bộ giao diện với Figma.
+
 > **Người viết:** A (Backend). **Người đọc:** B, C.
 > **Quy tắc:** chốt vào ngày 4. Muốn đổi API thì **báo cả nhóm trước khi sửa**, rồi cập nhật file này trong cùng Pull Request.
 
@@ -358,7 +378,7 @@ Người không phải admin gọi các endpoint này nhận `403`. **Mọi hàn
 | `GET /admin/posts?type=&status=&q=&limit=&offset=` | Bài đăng | Danh sách kèm **số báo cáo** của từng bài | ✅ |
 | `GET /admin/users?status=&q=&limit=&offset=` | Người dùng | Handle, **số điện thoại đã che** (`09•• ••• 321`), vai trò, tháng tham gia, số bài, số lần bị báo cáo, trạng thái. `status`: `ACTIVE`, `BANNED`, `REPORTED` (bị báo cáo nhiều) | ✅ |
 | `GET /admin/actions?target_type=&range=&q=` | Nhật ký hoạt động | Thời gian, admin, hành động, đối tượng, mã báo cáo, ghi chú. `range`: `today`, `7d`, `30d` | ✅ |
-| `GET /admin/conversations/{id}/messages?limit=100&before_id=` | Hội thoại bị báo cáo | Tin nhắn của cuộc chat **bị báo cáo**. Mỗi lần gọi **luôn ghi log** `VIEW_CONVERSATION` | 🧪 |
+| `GET /admin/conversations/{id}/messages?limit=100&before_id=` | Hội thoại bị báo cáo | Tin nhắn của cuộc chat **bị báo cáo**. Mỗi lần gọi **luôn ghi log** `VIEW_CONVERSATION` | ✅ |
 
 Số điện thoại **đầy đủ không bao giờ được trả về** cho admin web; backend chỉ gửi bản đã che.
 
@@ -439,7 +459,7 @@ Ghi chú:
 | `POST /admin/posts/{id}/restore` | không | Khôi phục bài đã gỡ | ✅ |
 | `POST /admin/users/{id}/ban` | `{"reason": "..."}` | Khóa tài khoản: đặt `is_banned`, chặn đăng nhập, gỡ các bài đang hoạt động của họ | ✅ |
 | `POST /admin/users/{id}/unban` | `{"reason": "..."}` | Mở khóa | ✅ |
-| `POST /admin/conversations/{id}/lock` | `{"reason": "..."}` | Khóa hội thoại: hai bên chỉ còn đọc. Log `LOCK_CONVERSATION` | 🧪 |
+| `POST /admin/conversations/{id}/lock` | `{"reason": "..."}` | Khóa hội thoại: hai bên chỉ còn đọc. Log `LOCK_CONVERSATION` | ✅ |
 
 #### `POST /admin/reports/{id}/review` và `POST /admin/reports/{id}/resolve`: chi tiết
 
