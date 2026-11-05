@@ -4,6 +4,7 @@ import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DataTable, type Column } from "./DataTable";
@@ -51,6 +52,19 @@ const filters: Record<Exclude<Tab, "stats">, [string, string][]> = {
     ["30d", "30 ngày qua"],
   ],
 };
+
+const typeFilters: Partial<Record<Exclude<Tab, "stats">, [string, string][]>> =
+  {
+    reports: [
+      ["POST", "Bài đăng"],
+      ["USER", "Tài khoản"],
+      ["CONVERSATION", "Hội thoại"],
+    ],
+    posts: [
+      ["LOST", "Lost"],
+      ["FOUND", "Found"],
+    ],
+  };
 
 const columns: Record<Exclude<Tab, "stats">, Column[]> = {
   reports: [
@@ -101,14 +115,16 @@ export function Catalog({
   const [draft, setDraft] = useState("");
   const [offset, setOffset] = useState(0);
   const [status, setStatus] = useState("");
+  const [type, setType] = useState("");
+  const typeOptions = typeFilters[tab];
   const [reportId, setReportId] = useState(initialReportId);
   const [moderation, setModeration] = useState<ModerationAction>();
   const result = useQuery({
-    queryKey: [tab, query, offset, status],
+    queryKey: [tab, query, offset, status, type],
     enabled: !reportId,
     queryFn: ({ signal }) =>
       api<PageData>(
-        `/admin/${tab}?${new URLSearchParams({ q: query, limit: "20", offset: String(offset), ...(status ? { [tab === "actions" ? "range" : "status"]: status } : {}) })}`,
+        `/admin/${tab}?${new URLSearchParams({ q: query, limit: "20", offset: String(offset), ...(status ? { [tab === "actions" ? "range" : "status"]: status } : {}), ...(typeOptions && type ? { type } : {}) })}`,
         signal,
       ),
   });
@@ -126,7 +142,11 @@ export function Catalog({
       />
     );
   return (
-    <section className="catalog-surface" aria-label={titles[tab]}>
+    <section
+      className="catalog-surface"
+      aria-label={titles[tab]}
+      aria-busy={result.isFetching}
+    >
       <form onSubmit={search} className="search-form">
         <FieldGroup>
           <Field>
@@ -140,6 +160,40 @@ export function Catalog({
             />
           </Field>
         </FieldGroup>
+        {typeOptions && (
+          <FieldGroup className="type-filter">
+            <Field>
+              <FieldLabel id="catalog-type-label">
+                {tab === "posts" ? "Loại bài" : "Loại báo cáo"}
+              </FieldLabel>
+              <ToggleGroup
+                aria-labelledby="catalog-type-label"
+                variant="outline"
+                spacing={2}
+                className="flex-wrap"
+                value={[type || "ALL"]}
+                onValueChange={(values) => {
+                  const selected = values[0];
+                  setType(!selected || selected === "ALL" ? "" : selected);
+                  setOffset(0);
+                }}
+              >
+                <ToggleGroupItem value="ALL" className="min-h-11">
+                  Tất cả
+                </ToggleGroupItem>
+                {typeOptions.map(([value, label]) => (
+                  <ToggleGroupItem
+                    key={value}
+                    value={value}
+                    className="min-h-11"
+                  >
+                    {label}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
+            </Field>
+          </FieldGroup>
+        )}
         <label className="filter-field">
           <span id="catalog-filter-label">
             {tab === "actions" ? "Khoảng thời gian" : "Trạng thái"}
@@ -166,11 +220,12 @@ export function Catalog({
         <Button
           type="button"
           variant="ghost"
-          disabled={!draft && !query && !status && offset === 0}
+          disabled={!draft && !query && !status && !type && offset === 0}
           onClick={() => {
             setDraft("");
             setQuery("");
             setStatus("");
+            setType("");
             setOffset(0);
           }}
         >
