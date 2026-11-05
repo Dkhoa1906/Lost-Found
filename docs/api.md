@@ -9,26 +9,37 @@ này đã được kiểm tra cục bộ. Tin nhắn ảnh chỉ
 hiển thị loại tin nhắn, chưa mở tệp đính kèm. Với báo cáo hội thoại, khóa tài khoản
 thành viên thực hiện từ danh sách người dùng.
 
-**Bổ sung catalog theo Figma (local, 05/11/2026):** danh sách báo cáo hiển thị
+**Bổ sung catalog theo Figma (đã kiểm chứng live, 05/11/2026):** danh sách báo cáo hiển thị
 thêm loại đối tượng, handle người báo cáo và thời gian gửi; bài đăng có danh mục
 và ngày đăng; người dùng có tháng tham gia. Dùng các trường API hiện có, số điện
 thoại vẫn được che. Ở viewport không quá 1180px, catalog dùng bản ghi dọc có
-nhãn để tránh khuất cột; desktop lớn giữ bảng. Kiểm chứng UI dùng Auth/API được
-kiểm soát, không chứng minh các bổ sung này đã có trên Render. Không đổi endpoint,
+nhãn để tránh khuất cột; desktop lớn giữ bảng. Hồi quy UI cục bộ dùng Auth/API được
+kiểm soát; bản triển khai đã được kiểm chứng riêng bên dưới. Không đổi endpoint,
 tham số, quyền hoặc nghiệp vụ; đây chỉ là một phần đối chiếu chức năng Figma.
 Hồi quy frontend ngày 05/11 đạt 23 test và build TypeScript/Vite; một probe
 chẩn đoán cũ được bỏ qua. Nội dung dài ở cả ba catalog không tràn viewport hoặc
 bị khuất cột trong bảng tại 375/768/1024/1440px; không lỗi console/page. Không
 chạy lại backend vì vòng này không thay đổi code/hợp đồng phía server.
 
+Sau khi PR #26 merge, Render báo frontend `a5fdb02` ở trạng thái `live`
+(`dep-dblv6im7bikc73ec7rq0`, hoàn tất 03:09:16 UTC ngày 05/11). Smoke chỉ đọc
+lúc 03:16:33–03:16:40 UTC dùng Auth/CORS thật: đăng nhập, tìm dữ liệu QA trên
+ba catalog, kiểm tra cột mới và đối chiếu handle người báo cáo, danh mục,
+tháng tham gia với response API, rồi đăng xuất. Giá trị thời gian gửi/ngày đăng
+và loại đối tượng hiển thị được kiểm tra cục bộ; smoke live chưa tự động đối
+chiếu các giá trị này. Tất cả
+375/768/1024/1440px không tràn viewport hoặc bảng, không lỗi console/page;
+request catalog đều `200`. Chặn toàn bộ API ghi nghiệp vụ, không thay đổi dữ liệu.
+Chưa xác nhận toàn bộ chức năng Figma hoặc Android từ lần kiểm tra này.
+
 Nâng cấp giao diện danh sách đã được kiểm tra trên bản live: xóa bộ lọc, hiển thị khoảng
 kết quả, hàng dữ liệu dạng dọc trên điện thoại, bỏ qua điều hướng bằng bàn phím
 và khôi phục focus sau khi hủy kiểm duyệt. Các cải tiến này giữ nguyên hợp đồng
-API bên dưới. Frontend Render đang chạy commit `93d300b`, chứa PR #20–#23.
+API bên dưới. Frontend Render đã xác nhận commit `a5fdb02`, gồm PR #20–#26.
 
 **Triển khai admin-web (05/11/2026):** https://lost-found-admin.onrender.com,
-Render Static Site từ `develop`, commit `93d300b`. Backend đang chạy `37a0405`;
-code backend và các SQL database không đổi từ commit đó đến `93d300b`
+Render Static Site từ `develop`, commit `a5fdb02`. Backend đang chạy `37a0405`;
+code backend và các SQL database không đổi từ commit đó đến `a5fdb02`
 (các cập nhật tài liệu không yêu cầu triển khai lại backend).
 Kiểm tra trực tiếp đã đạt: `/health`, chặn request chưa đăng nhập (`401`), CORS
 preflight từ domain admin-web, đăng nhập admin, dashboard (`GET /admin/stats`),
