@@ -5,12 +5,14 @@ export type CatalogRow = {
   title?: string;
   target_label?: string;
   target_type?: string;
+  reporter?: { id: string; username: string };
   status?: string;
   reason?: string;
   type?: string;
   username?: string;
   role?: string;
   phone_masked?: string | null;
+  joined_month?: string;
   is_banned?: boolean;
   post_count?: number;
   report_count?: number;
@@ -20,6 +22,7 @@ export type CatalogRow = {
   note?: string | null;
   author_username?: string;
   author_id?: string;
+  category_name?: string;
   created_at?: string;
 };
 

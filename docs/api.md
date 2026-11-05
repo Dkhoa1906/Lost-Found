@@ -9,6 +9,18 @@ này đã được kiểm tra cục bộ. Tin nhắn ảnh chỉ
 hiển thị loại tin nhắn, chưa mở tệp đính kèm. Với báo cáo hội thoại, khóa tài khoản
 thành viên thực hiện từ danh sách người dùng.
 
+**Bổ sung catalog theo Figma (local, 05/11/2026):** danh sách báo cáo hiển thị
+thêm loại đối tượng, handle người báo cáo và thời gian gửi; bài đăng có danh mục
+và ngày đăng; người dùng có tháng tham gia. Dùng các trường API hiện có, số điện
+thoại vẫn được che. Ở viewport không quá 1180px, catalog dùng bản ghi dọc có
+nhãn để tránh khuất cột; desktop lớn giữ bảng. Kiểm chứng UI dùng Auth/API được
+kiểm soát, không chứng minh các bổ sung này đã có trên Render. Không đổi endpoint,
+tham số, quyền hoặc nghiệp vụ; đây chỉ là một phần đối chiếu chức năng Figma.
+Hồi quy frontend ngày 05/11 đạt 23 test và build TypeScript/Vite; một probe
+chẩn đoán cũ được bỏ qua. Nội dung dài ở cả ba catalog không tràn viewport hoặc
+bị khuất cột trong bảng tại 375/768/1024/1440px; không lỗi console/page. Không
+chạy lại backend vì vòng này không thay đổi code/hợp đồng phía server.
+
 Nâng cấp giao diện danh sách đã được kiểm tra trên bản live: xóa bộ lọc, hiển thị khoảng
 kết quả, hàng dữ liệu dạng dọc trên điện thoại, bỏ qua điều hướng bằng bàn phím
 và khôi phục focus sau khi hủy kiểm duyệt. Các cải tiến này giữ nguyên hợp đồng

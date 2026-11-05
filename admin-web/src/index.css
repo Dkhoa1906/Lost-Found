@@ -824,6 +824,48 @@ textarea {
   .section-heading {
     flex-wrap: wrap;
   }
+  .catalog-surface [data-slot="table"] {
+    min-width: 0;
+    display: block;
+  }
+  .catalog-surface [data-slot="table-header"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .catalog-surface [data-slot="table-body"] {
+    display: grid;
+    gap: 16px;
+  }
+  .catalog-surface [data-slot="table-row"] {
+    display: grid;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 4px 12px;
+  }
+  .catalog-surface [data-slot="table-cell"] {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 10px 0;
+    max-width: none;
+    text-align: right;
+    border-bottom: 1px solid var(--border);
+  }
+  .catalog-surface [data-slot="table-cell"]::before {
+    content: attr(data-label);
+    color: var(--muted-foreground);
+    font-size: 12px;
+    font-weight: 400;
+    text-align: left;
+    flex-shrink: 0;
+  }
+  .catalog-surface [data-slot="table-cell"]:last-child {
+    border-bottom: 0;
+  }
 }
 @media (max-width: 1000px) {
   .admin-layout {
@@ -983,48 +1025,6 @@ textarea {
   }
   .catalog-surface .filter-field {
     min-width: 100%;
-  }
-  .catalog-surface [data-slot="table"] {
-    min-width: 0;
-    display: block;
-  }
-  .catalog-surface [data-slot="table-header"] {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-  }
-  .catalog-surface [data-slot="table-body"] {
-    display: grid;
-    gap: 16px;
-  }
-  .catalog-surface [data-slot="table-row"] {
-    display: grid;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 4px 12px;
-  }
-  .catalog-surface [data-slot="table-cell"] {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    padding: 10px 0;
-    max-width: none;
-    text-align: right;
-    border-bottom: 1px solid var(--border);
-  }
-  .catalog-surface [data-slot="table-cell"]::before {
-    content: attr(data-label);
-    color: var(--muted-foreground);
-    font-size: 12px;
-    font-weight: 400;
-    text-align: left;
-    flex-shrink: 0;
-  }
-  .catalog-surface [data-slot="table-cell"]:last-child {
-    border-bottom: 0;
   }
   .catalog-surface .pagination > p {
     width: 100%;

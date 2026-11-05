@@ -18,6 +18,21 @@ focus to its trigger. These interface changes are verified on the live release,
 now at `93d300b` (2026-11-05). The backend remains at `37a0405`; application code
 and SQL scripts are unchanged between these commits.
 
+Additional Figma catalog fields are implemented locally: report target type,
+reporter handle and submission time; post category and posting date; user joining
+month. They use the existing API response, including its masked phone and joining
+month values. The labeled record layout now applies through 1180px so tablet
+catalogs keep every field and action accessible; larger desktops retain tables.
+Reference frames in the [team Figma](https://www.figma.com/design/oq27gMLy9XfXWTeerrGQqy/LTTBDD-L-F?node-id=0-1):
+reports `297:11116`, posts `297:11482` and users `297:11740`. Design follows ui-ux-pro-max
+with the existing teal/Geist tokens and shared shadcn/ui table. This addition is
+not yet verified on the deployed site and does not claim full Figma parity.
+Local verification on 2026-11-05: all 23 regression/behavior tests and the
+TypeScript/Vite build passed (one archived diagnostic probe is skipped). Long
+content fits 375/768/1024/1440px without viewport or internal table overflow;
+the responsive checks use reduced motion and report no console/page errors.
+These UI checks control Auth/API and do not replace deployed integration QA.
+
 ```powershell
 cd admin-web
 npm ci
