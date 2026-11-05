@@ -9,6 +9,17 @@ này đã được kiểm tra cục bộ. Tin nhắn ảnh chỉ
 hiển thị loại tin nhắn, chưa mở tệp đính kèm. Với báo cáo hội thoại, khóa tài khoản
 thành viên thực hiện từ danh sách người dùng.
 
+**Bộ lọc loại theo Figma (local, 05/11/2026):** admin-web có nhóm chọn
+Tất cả/Lost/Found cho bài đăng và Tất cả/Bài đăng/Tài khoản/Hội thoại cho báo cáo.
+Các lựa chọn dùng `type` của `GET /admin/posts` và `GET /admin/reports` đã có,
+kết hợp với `q` và `status`. Đổi loại đưa về trang đầu; chọn Tất cả bỏ `type`,
+Xóa bộ lọc xóa cả loại/từ khóa/trạng thái và đặt lại phân trang. Users và Actions
+không có nhóm loại này. Khi tải lại dữ liệu, vùng catalog có trạng thái bận;
+lỗi/thử lại không làm mất loại đang chọn. Không đổi hợp đồng hoặc quyền API.
+Hồi quy local đạt 28 test và build TypeScript/Vite (một probe chẩn đoán cũ
+được bỏ qua), gồm kiểm tra bàn phím, nút ít nhất 44px và bố trí
+375/768/1024/1440px. Auth/API được kiểm soát; bộ lọc mới chưa kiểm chứng trên live.
+
 **Bổ sung catalog theo Figma (đã kiểm chứng live, 05/11/2026):** danh sách báo cáo hiển thị
 thêm loại đối tượng, handle người báo cáo và thời gian gửi; bài đăng có danh mục
 và ngày đăng; người dùng có tháng tham gia. Dùng các trường API hiện có, số điện

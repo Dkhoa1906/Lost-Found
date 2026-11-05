@@ -48,6 +48,21 @@ viewport or internal table overflow, console/page errors or business writes;
 catalog requests returned200. Render deploy `dep-dblv6im7bikc73ec7rq0` was live
 at commit `a5fdb02` before this check. The browser blocked all business mutations.
 
+Type filters from Figma are implemented and verified locally: All/Lost/Found on
+posts and All/Post/User/Conversation on reports. They use the existing `type`
+parameter together with search/status; changing type resets pagination, All
+removes type and Reset clears the complete filter. Other catalogs omit this
+control. The shared shadcn ToggleGroup provides labeled keyboard controls with
+44px touch targets and the existing semantic colors. Loading is exposed through
+the catalog's busy state; error/retry and empty results retain the selected type.
+
+Local verification on 2026-11-05 passed all 28 browser tests and TypeScript/Vite
+build (one archived diagnostic is skipped), including type/query/status requests,
+page reset, clearing, error recovery, keyboard/touch and 375/768/1024/1440px
+without overflow or console/page errors in the normal responsive flow. These
+tests control external Auth/API; type-filter additions are not yet verified live.
+No endpoint, permission, database or dependency-manifest change is required.
+
 ```powershell
 cd admin-web
 npm ci

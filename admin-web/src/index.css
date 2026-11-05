@@ -576,6 +576,13 @@ button:disabled {
   min-width: 180px;
   max-width: 480px;
 }
+.search-form .type-filter {
+  container-type: normal;
+  flex: 0 1 auto;
+  width: auto;
+  min-width: 0;
+  max-width: 100%;
+}
 .filter-field {
   display: flex;
   flex-direction: column;
@@ -868,6 +875,9 @@ textarea {
   }
 }
 @media (max-width: 1000px) {
+  .search-form .type-filter {
+    flex-basis: 100%;
+  }
   .admin-layout {
     grid-template-columns: 190px minmax(0, 1fr);
   }
