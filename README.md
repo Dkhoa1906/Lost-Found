@@ -292,6 +292,10 @@ stateDiagram-v2
 ## 7. Giao diện (thiết kế Figma)
 
 Thiết kế nằm trong file Figma của nhóm (trang *01 - UI Design*, *02 - Components*).
+Tham chiếu: [LTTBDD L-F trên Figma](https://www.figma.com/design/oq27gMLy9XfXWTeerrGQqy/LTTBDD-L-F?node-id=0-1).
+Người dùng đã tiếp nhận phần web của C (`admin-web/`); phần Android vẫn theo
+phân công riêng. Thiết kế web dùng `ui-ux-pro-max` khi có, giữ các chức năng
+trong Figma và tuân thủ hợp đồng API hiện hành.
 
 | Nhóm màn hình | Nội dung |
 |---|---|
