@@ -21,23 +21,32 @@ On phones, table rows reflow into labeled records with visible action buttons;
 touch controls are at least 44px high. Keyboard users can skip navigation and
 focus moves to the destination heading. Canceling a moderation dialog restores
 focus to its trigger. These interface changes are verified on the live release,
-now at `93d300b` (2026-11-05). The backend remains at `37a0405`; application code
-and SQL scripts are unchanged between these commits.
+now at `a5fdb02` (2026-11-05, PR #26). The backend remains at `37a0405`;
+backend application code and SQL scripts are unchanged between these commits.
 
-Additional Figma catalog fields are implemented locally: report target type,
+Additional Figma catalog fields are deployed and verified: report target type,
 reporter handle and submission time; post category and posting date; user joining
 month. They use the existing API response, including its masked phone and joining
 month values. The labeled record layout now applies through 1180px so tablet
 catalogs keep every field and action accessible; larger desktops retain tables.
 Reference frames in the [team Figma](https://www.figma.com/design/oq27gMLy9XfXWTeerrGQqy/LTTBDD-L-F?node-id=0-1):
 reports `297:11116`, posts `297:11482` and users `297:11740`. Design follows ui-ux-pro-max
-with the existing teal/Geist tokens and shared shadcn/ui table. This addition is
-not yet verified on the deployed site and does not claim full Figma parity.
+with the existing teal/Geist tokens and shared shadcn/ui table. This is a scoped
+catalog change and does not claim full Figma parity.
 Local verification on 2026-11-05: all 23 regression/behavior tests and the
 TypeScript/Vite build passed (one archived diagnostic probe is skipped). Long
 content fits 375/768/1024/1440px without viewport or internal table overflow;
 the responsive checks use reduced motion and report no console/page errors.
 These UI checks control Auth/API and do not replace deployed integration QA.
+
+Separate live smoke on 2026-11-05 (03:16:33–03:16:40 UTC) passed real Auth/CORS
+login, filtered QA records on reports/posts/users and logout. New column headers
+were present; reporter handle, category and joining month matched real API values.
+Displayed timestamps and target type are covered locally, without automated
+live value comparisons in this smoke. All three catalogs fit 375/768/1024/1440px without
+viewport or internal table overflow, console/page errors or business writes;
+catalog requests returned200. Render deploy `dep-dblv6im7bikc73ec7rq0` was live
+at commit `a5fdb02` before this check. The browser blocked all business mutations.
 
 ```powershell
 cd admin-web
