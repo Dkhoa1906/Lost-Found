@@ -55,14 +55,19 @@ const filters: Record<Exclude<Tab, "stats">, [string, string][]> = {
 const columns: Record<Exclude<Tab, "stats">, Column[]> = {
   reports: [
     { key: "code", label: "Mã" },
+    { key: "target_type", label: "Loại" },
     { key: "target_label", label: "Đối tượng" },
     { key: "reason", label: "Lý do" },
+    { key: "reporter", label: "Người báo cáo" },
+    { key: "created_at", label: "Thời gian" },
     { key: "status", label: "Trạng thái" },
   ],
   posts: [
     { key: "title", label: "Bài đăng" },
     { key: "type", label: "Loại" },
+    { key: "category_name", label: "Danh mục" },
     { key: "author_username", label: "Người đăng" },
+    { key: "created_at", label: "Ngày đăng" },
     { key: "report_count", label: "Báo cáo" },
     { key: "status", label: "Trạng thái" },
   ],
@@ -70,6 +75,7 @@ const columns: Record<Exclude<Tab, "stats">, Column[]> = {
     { key: "username", label: "Định danh" },
     { key: "phone_masked", label: "Số điện thoại" },
     { key: "role", label: "Vai trò" },
+    { key: "joined_month", label: "Tham gia" },
     { key: "post_count", label: "Số bài" },
     { key: "report_count", label: "Báo cáo" },
     { key: "is_banned", label: "Trạng thái" },

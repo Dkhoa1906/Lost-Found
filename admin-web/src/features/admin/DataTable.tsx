@@ -92,8 +92,10 @@ export function DataTable({
                     <Badge variant="secondary" data-status={String(value)}>
                       {value === "RESOLVED" && row.type
                         ? "Đã trao trả"
-                        : labels[String(value)] || value}
+                        : labels[String(value)] || String(value ?? "—")}
                     </Badge>
+                  ) : c.key === "reporter" ? (
+                    (row.reporter?.username ?? "—")
                   ) : c.key === "created_at" && value ? (
                     new Date(String(value)).toLocaleString("vi-VN")
                   ) : c.key === "is_banned" ? (
