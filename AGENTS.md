@@ -41,6 +41,8 @@ History uses concise messages such as `feat: add admin guard and report list/det
 
 Use `develop` as the integration branch and keep `main` for validated demo releases. Start each feature on a separate branch from `develop`, finish and verify it there, then open a PR into `develop`. Do not mix a new feature into an unfinished feature branch or push directly to `develop` or `main`. Promote tested work from `develop` to `main` for a demo release; do not merge into `main` merely to keep it synchronized. Distinguish work present on a feature branch from work merged into `develop` and work verified on the deployed service.
 
+Before merging any PR, explain its concrete changes, target branch, verification, remaining limitations and deployment impact to the user, then ask for their explicit approval and wait for it. Complete implementation and review before asking so the user can approve a finished result. Permission to develop or open a PR is not permission to merge. After approval, the agent may merge that reviewed PR and verify integration/deployment; if its scope changes before merging, explain the changes and obtain approval again.
+
 Commit this root `AGENTS.md` so every team member's coding agent can follow the same rules. Keep `.agents/`, `GLOSSARY.md`, tests, test-only configuration, QA screenshots, temporary plans/reports and `.local-artifacts/` local unless the user changes that policy. Stage explicit source/documentation paths; do not use a blanket force-add to include ignored files.
 
 ## Documentation and UI Work
@@ -91,6 +93,7 @@ Client reads use Supabase with RLS; business state changes go through FastAPI. K
    - Tuyệt đối KHÔNG dừng lại giữa chừng để hỏi những câu mang tính xin phép hiển nhiên.
 
 2. **Chỉ được phép dừng lại xin ý kiến khi:**
+   - Trước mỗi lần merge PR: giải thích nội dung, kiểm chứng và ảnh hưởng triển khai, rồi chờ người dùng đồng ý rõ ràng theo quy trình phê duyệt ở trên.
    - Xóa file hoặc thư mục ngoài phạm vi artifact đã được chấp thuận ở trên, hoặc chưa chứng minh được là hết tác dụng (`rm`, `Remove-Item`, `git clean`).
    - Can thiệp vào lịch sử Git có nguy cơ mất dữ liệu (`git reset --hard`, `git push --force`).
    - Thao tác liên quan đến xóa bảng, drop cột hoặc ghi đè dữ liệu trên cơ sở dữ liệu Supabase/PostgreSQL.
