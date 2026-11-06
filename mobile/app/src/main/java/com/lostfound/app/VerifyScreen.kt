@@ -15,6 +15,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.lostfound.app.data.remote.VerificationRepository
+import com.lostfound.app.data.remote.ClaimAnswer
 
 private val VerifyBackground = Color(0xFFD7DBDE)
 private val VerifyBlue = Color(0xFF28627A)
@@ -25,12 +27,10 @@ private val VerifyYellow = Color(0xFFF3E7B9)
 
 @Composable
 fun VerifyScreen(
-    questions: List<String> = listOf(
-        "Màu ốp lưng là gì?",
-        "Hình nền màn hình khóa?",
-        "Có vết xước ở đâu?"
-    ),
-    attemptsLeft: Int = 2
+    questions: List<String> = emptyList(),
+    attemptsLeft: Int = 2,
+    onSubmit: (List<String>) -> Unit = {},
+    onBack: () -> Unit = {}
 ) {
     val answers = remember(questions) {
         mutableStateListOf<String>().apply {
@@ -58,7 +58,7 @@ fun VerifyScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Surface(
-                    onClick = { },
+                    onClick = onBack,
                     color = VerifyWhite,
                     shape = RoundedCornerShape(9.dp)
                 ) {
@@ -210,7 +210,7 @@ fun VerifyScreen(
 
                 Button(
                     onClick = {
-                        // TODO: Kết nối API gửi câu trả lời
+                        onSubmit(answers.toList())
                     },
                     enabled = answers.all { it.isNotBlank() },
                     modifier = Modifier
@@ -233,7 +233,7 @@ fun VerifyScreen(
 
                 Button(
                     onClick = {
-                        // TODO: Gửi claim với answers = []
+                        onSubmit(emptyList())
                     },
                     modifier = Modifier
                         .fillMaxWidth()

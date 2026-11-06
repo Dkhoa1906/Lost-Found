@@ -27,7 +27,8 @@ private val LostText = Color(0xFFB86B43)
 
 @Composable
 fun DetailScreen(
-    isFound: Boolean = true
+    isFound: Boolean = true,
+    onVerify: () -> Unit = {}
 ) {
     val title = if (isFound) {
         "Nhặt được điện thoại ốp xanh"
@@ -67,7 +68,7 @@ fun DetailScreen(
             ) {
                 Button(
                     onClick = {
-                        // Tạm thời chưa kết nối luồng xác minh
+                            onVerify()
                     },
                     modifier = Modifier
                         .fillMaxWidth()
