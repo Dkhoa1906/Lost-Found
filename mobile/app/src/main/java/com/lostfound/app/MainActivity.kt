@@ -1,4 +1,3 @@
-
 package com.lostfound.app
 
 import android.os.Bundle
@@ -12,7 +11,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             LostFoundTheme {
-                HandoverScreen()
+                DetailScreen()
             }
         }
     }
